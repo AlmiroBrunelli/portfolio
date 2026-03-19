@@ -6,7 +6,7 @@ defineProps({
   isExplorerMinimized: Boolean
 })
 
-const emit = defineEmits(['toggleExplorer', 'minimizeExplorer'])
+const emit = defineEmits(['toggleExplorer', 'minimizeExplorer', 'toggleStartMenu'])
 
 const currentTime = ref('')
 const currentDate = ref('')
@@ -31,7 +31,7 @@ onUnmounted(() => {
 <template>
   <div class="taskbar">
     <div class="taskbar-left">
-      <div class="start-btn" title="Iniciar">
+      <div class="start-btn" title="Iniciar" @click="emit('toggleStartMenu')">
         <svg viewBox="0 0 88 88" xmlns="http://www.w3.org/2000/svg" width="20" height="20">
           <path d="M0 12.402l35.687-4.86.016 34.423-35.67.203zm35.67 33.529l.029 34.508L0 75.523V46.128zM39.697 7.02L88 0v41.745l-48.303.3zm48.303 39.317L88 88l-48.303-7.075-.011-34.52z" fill="#fff"/>
         </svg>

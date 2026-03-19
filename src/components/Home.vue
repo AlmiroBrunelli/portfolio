@@ -74,7 +74,7 @@ const selectOS = (os) => {
         <div class="spinner"></div>
         <p>Configurando seu ambiente...</p>
       </div>
-      <component v-else :is="getComponent()" />
+      <component v-else :is="getComponent()" @change-os="selectOS" />
     </Transition>
   </div>
 </template>

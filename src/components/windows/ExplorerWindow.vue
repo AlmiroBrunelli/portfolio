@@ -48,7 +48,7 @@ const windowStyle = computed(() => {
       top: '0',
       left: '0',
       width: '100%',
-      height: 'calc(100% - 40px)',
+      height: '100%',
       transform: 'none',
       borderRadius: '0'
     }
