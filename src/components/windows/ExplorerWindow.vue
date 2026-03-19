@@ -9,7 +9,13 @@ const props = defineProps({
   isMinimized: Boolean
 })
 
-const emit = defineEmits(['minimize', 'maximize', 'close', 'toggle'])
+const emit = defineEmits(['close', 'minimize', 'maximize', 'close', 'toggle'])
+
+const currentPath = ref('Este Computador')
+
+const navigateTo = (path) => {
+  currentPath.value = path
+}
 
 const isMaximized = ref(false)
 const pos = ref({ x: 100, y: 50 })
@@ -159,15 +165,24 @@ onUnmounted(() => {
 
       <ExplorerTopBar 
         :isMaximized="isMaximized"
+        :currentPath="currentPath"
         @minimize="emit('minimize')"
         @maximize="isMaximized = !isMaximized"
         @close="emit('close')"
         @dragstart="startDrag"
+        @navigate="navigateTo"
       />
       
       <div class="window-body">
-        <ExplorerSidebar />
-        <ExplorerMainView />
+        <ExplorerSidebar 
+          :currentPath="currentPath"
+          @navigate="navigateTo"
+        />
+        <ExplorerMainView 
+          :currentPath="currentPath"
+          @navigate="navigateTo"
+          @open-file="path => emit('open-file', path)"
+        />
       </div>
     </div>
   </Transition>

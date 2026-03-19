@@ -1,9 +1,10 @@
 <script setup>
 defineProps({
-  isMaximized: Boolean
+  isMaximized: Boolean,
+  currentPath: String
 })
 
-defineEmits(['minimize', 'maximize', 'close', 'dragstart'])
+const emit = defineEmits(['minimize', 'maximize', 'close', 'dragstart', 'navigate'])
 </script>
 
 <template>
@@ -35,16 +36,17 @@ defineEmits(['minimize', 'maximize', 'close', 'dragstart'])
       </div>
       
       <div class="address-box">
-        <div class="address-icon">🏠</div>
+        <div class="address-icon">{{ currentPath === 'Imagens' ? '🖼️' : '🏠' }}</div>
         <div class="breadcrumbs">
-          <span class="crumb">Início</span>
+          <span class="crumb" @click="emit('navigate', 'Este Computador')">Este Computador</span>
           <span class="separator">></span>
+          <span v-if="currentPath !== 'Este Computador'" class="crumb">{{ currentPath }}</span>
         </div>
       </div>
       
       <div class="search-box">
         <span class="search-icon">🔍</span>
-        <input type="text" placeholder="Pesquisar em Início" />
+        <input type="text" :placeholder="'Pesquisar em ' + currentPath" />
       </div>
     </div>
   </div>

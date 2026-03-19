@@ -3,10 +3,14 @@ import { ref, onMounted } from 'vue'
 import ExplorerWindow from './windows/ExplorerWindow.vue'
 import Taskbar from './windows/Taskbar.vue'
 import StartMenu from './windows/StartMenu.vue'
+import PhotoViewer from './windows/PhotoViewer.vue'
 
 const isExplorerOpen = ref(true)
 const isExplorerMinimized = ref(false)
 const isStartMenuOpen = ref(false)
+const openedPhoto = ref(null)
+const photoList = ref([])
+const photoIndex = ref(0)
 
 const emit = defineEmits(['change-os'])
 
@@ -46,6 +50,7 @@ onMounted(() => {
         :isMinimized="isExplorerMinimized"
         @close="closeExplorer"
         @minimize="minimizeExplorer"
+        @open-file="data => { openedPhoto = data.path; photoList = data.list; photoIndex = data.index }"
       />
       
       <!-- Start Menu -->
@@ -53,6 +58,16 @@ onMounted(() => {
         v-if="isStartMenuOpen"
         @change-os="os => emit('change-os', os)"
         @close="isStartMenuOpen = false"
+      />
+
+      <!-- Photo Viewer -->
+      <PhotoViewer 
+        v-if="openedPhoto"
+        :src="openedPhoto"
+        :photos="photoList"
+        :initialIndex="photoIndex"
+        :isOpen="!!openedPhoto"
+        @close="openedPhoto = null"
       />
     </div>
 
@@ -85,7 +100,6 @@ onMounted(() => {
   flex: 1;
   position: relative;
   width: 100%;
-  height: 100%;
 }
 </style>
 

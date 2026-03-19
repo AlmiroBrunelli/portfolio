@@ -1,15 +1,27 @@
 <script setup>
+defineProps({
+  currentPath: String
+})
+
+const emit = defineEmits(['navigate'])
+
 const navItems = [
   { label: 'Acesso rápido', icon: '⭐' },
   { label: 'OneDrive', icon: '☁️' },
-  { label: 'Este Computador', icon: '🖥️', active: true },
+  { label: 'Este Computador', icon: '🖥️' },
   { label: 'Rede', icon: '🌐' }
 ]
 </script>
 
 <template>
   <div class="sidebar">
-    <div v-for="item in navItems" :key="item.label" class="nav-item" :class="{ active: item.active }">
+    <div 
+      v-for="item in navItems" 
+      :key="item.label" 
+      class="nav-item" 
+      :class="{ active: currentPath === item.label }"
+      @click="emit('navigate', item.label)"
+    >
       <span class="icon">{{ item.icon }}</span>
       <span class="label">{{ item.label }}</span>
     </div>
@@ -17,11 +29,19 @@ const navItems = [
     <div class="separator"></div>
     
     <div class="nav-group">
-      <div class="nav-item">
+      <div 
+        class="nav-item" 
+        :class="{ active: currentPath === 'Documentos' }"
+        @click="emit('navigate', 'Documentos')"
+      >
         <span class="icon">📁</span>
         <span class="label">Documentos</span>
       </div>
-      <div class="nav-item">
+      <div 
+        class="nav-item" 
+        :class="{ active: currentPath === 'Imagens' }"
+        @click="emit('navigate', 'Imagens')"
+      >
         <span class="icon">🖼️</span>
         <span class="label">Imagens</span>
       </div>

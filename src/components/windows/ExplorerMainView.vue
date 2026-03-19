@@ -1,22 +1,58 @@
 <script setup>
-const items = [
+import { computed } from 'vue'
+
+const props = defineProps({
+  currentPath: String
+})
+
+const emit = defineEmits(['navigate', 'open-file'])
+
+const rootItems = [
   { label: 'Projetos', icon: '🚀' },
   { label: 'Currículo', icon: '📄' },
   { label: 'Links', icon: '🌐' },
   { label: 'Certificados', icon: '🏆' },
   { label: 'Blog', icon: '📝' }
 ]
+
+const imageItems = [
+  { label: 'windows-wallpaper.png', icon: '🖼️', type: 'image', path: '/src/assets/windows-wallpaper.png' },
+  { label: 'hero.png', icon: '🖼️', type: 'image', path: '/src/assets/hero.png' },
+  { label: 'background_1.jpg', icon: '🖼️', type: 'image', path: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b' },
+  { label: 'background_2.jpg', icon: '🖼️', type: 'image', path: 'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05' }
+]
+
+const displayItems = computed(() => {
+  if (props.currentPath === 'Imagens') return imageItems
+  if (props.currentPath === 'Este Computador') return rootItems
+  return [] // Empty for other folders for now
+})
+
+const handleItemClick = (item) => {
+    if (item.type === 'image') {
+        const index = imageItems.findIndex(i => i.path === item.path)
+        emit('open-file', { path: item.path, list: imageItems, index })
+    } else {
+        emit('navigate', item.label)
+    }
+}
 </script>
 
 <template>
   <div class="main-view">
     <div class="content-header">
-      <h2 class="section-title">Pastas</h2>
+      <h2 class="section-title">{{ currentPath }}</h2>
     </div>
-    <div class="grid">
-      <div v-for="item in items" :key="item.label" class="grid-item">
+    <div class="grid" :class="{ 'image-grid': currentPath === 'Imagens' }">
+      <div 
+        v-for="item in displayItems" 
+        :key="item.label" 
+        class="grid-item"
+        @dblclick="handleItemClick(item)"
+      >
         <div class="icon-wrapper">
-          <span class="icon">{{ item.icon }}</span>
+          <img v-if="item.type === 'image'" :src="item.path" class="thumbnail" />
+          <span v-else class="icon">{{ item.icon }}</span>
         </div>
         <span class="label">{{ item.label }}</span>
       </div>
@@ -70,9 +106,27 @@ const items = [
 .icon-wrapper {
   font-size: 48px;
   height: 60px;
+  width: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
+  overflow: hidden;
+  border-radius: 4px;
+}
+
+.thumbnail {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.2s;
+}
+
+.grid-item:hover .thumbnail {
+  transform: scale(1.05);
+}
+
+.image-grid {
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
 }
 
 .label {
