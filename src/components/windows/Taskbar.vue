@@ -1,37 +1,52 @@
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted, computed } from 'vue'
 
-defineProps({
+const props = defineProps({
   isExplorerOpen: Boolean,
   isExplorerMinimized: Boolean,
   isCalculatorOpen: Boolean,
   isCalculatorMinimized: Boolean,
-  focusedApp: String
+  isEdgeOpen: Boolean,
+  isEdgeMinimized: Boolean,
+  isPhotoViewerOpen: Boolean,
+  isPhotoViewerMinimized: Boolean,
+  focusedApp: String,
+  explorerPath: {
+    type: String,
+    default: 'Este Computador'
+  }
 })
 
-const emit = defineEmits(['toggleExplorer', 'minimizeExplorer', 'toggleStartMenu', 'toggleCalculator'])
+const emit = defineEmits(['toggleExplorer', 'minimizeExplorer', 'toggleStartMenu', 'toggleCalculator', 'togglePhotoViewer', 'toggleEdge'])
 
 const currentTime = ref('')
 const currentDate = ref('')
-const isStartHovered = ref(false)
-const showTooltip = ref(false)
+const activeTooltip = ref('')
 let tooltipTimeout = null
 
-const handleStartMouseEnter = () => {
-  isStartHovered.value = true
+const handleMouseEnter = (text) => {
   tooltipTimeout = setTimeout(() => {
-    showTooltip.value = true
-  }, 1000)
+    activeTooltip.value = text
+  }, 500)
 }
 
-const handleStartMouseLeave = () => {
-  isStartHovered.value = false
-  showTooltip.value = false
+const handleMouseLeave = () => {
+  activeTooltip.value = ''
   if (tooltipTimeout) {
     clearTimeout(tooltipTimeout)
     tooltipTimeout = null
   }
 }
+
+const explorerIcon = computed(() => {
+  const path = props.explorerPath
+  if (path === 'Imagens') return '🖼️'
+  if (path === 'OneDrive') return '☁️'
+  if (path === 'Rede') return '🌐'
+  if (path === 'Este Computador') return '🖥️'
+  if (path === 'Documentos') return '📄'
+  return '📂'
+})
 
 const updateTime = () => {
   const now = new Date()
@@ -54,66 +69,96 @@ onUnmounted(() => {
   <div class="taskbar">
     <div class="taskbar-left">
       <div 
-        class="start-btn" 
+        class="task-btn start-btn" 
         @click="emit('toggleStartMenu')"
-        @mouseenter="handleStartMouseEnter"
-        @mouseleave="handleStartMouseLeave"
+        @mouseenter="handleMouseEnter('Iniciar')"
+        @mouseleave="handleMouseLeave"
       >
-        <img src="../../assets/windows/windows.png" width="24" height="24" alt="Windows" />
+        <img src="../../assets/windows/windows.png" width="24" height="24" alt="Start" />
         <Transition name="fade">
-          <div v-if="showTooltip" class="custom-tooltip">Iniciar</div>
+          <div v-if="activeTooltip === 'Iniciar'" class="custom-tooltip">Iniciar</div>
         </Transition>
       </div>
-      <div class="search-container">
-        <div class="search-icon">🔍</div>
-        <input type="text" placeholder="Digite aqui para pesquisar" />
-      </div>
-      <div class="task-btn cortana" title="Falar com a Cortana">
-         <div class="cortana-circle"></div>
-      </div>
-    </div>
 
-    <div class="taskbar-center">
+      <div class="separator-v"></div>
+
       <div 
         class="task-btn" 
         :class="{ active: focusedApp === 'Explorer' && !isExplorerMinimized, 'has-window': isExplorerOpen }"
-        title="Este Computador"
         @click="emit('toggleExplorer')"
+        @mouseenter="handleMouseEnter(explorerPath)"
+        @mouseleave="handleMouseLeave"
       >
-         <span class="icon">📂</span>
+         <span class="icon">{{ explorerIcon }}</span>
          <div v-if="isExplorerOpen" class="active-indicator" :class="{ minimized: isExplorerMinimized || focusedApp !== 'Explorer' }"></div>
+         <Transition name="fade">
+           <div v-if="activeTooltip === explorerPath" class="custom-tooltip">{{ explorerPath }}</div>
+         </Transition>
       </div>
       
       <div 
         v-if="isCalculatorOpen"
         class="task-btn" 
         :class="{ active: focusedApp === 'Calculator' && !isCalculatorMinimized, 'has-window': true }"
-        title="Calculadora"
         @click="emit('toggleCalculator')"
+        @mouseenter="handleMouseEnter('Calculadora')"
+        @mouseleave="handleMouseLeave"
       >
          <img src="../../assets/windows/calculator.png" width="24" height="24" alt="Calculadora" />
          <div class="active-indicator" :class="{ minimized: isCalculatorMinimized || focusedApp !== 'Calculator' }"></div>
+         <Transition name="fade">
+           <div v-if="activeTooltip === 'Calculadora'" class="custom-tooltip">Calculadora</div>
+         </Transition>
       </div>
 
-      <div class="task-btn" title="Microsoft Edge">
-         <span class="icon">🌐</span>
+      <div 
+        v-if="isPhotoViewerOpen"
+        class="task-btn" 
+        :class="{ active: focusedApp === 'PhotoViewer' && !isPhotoViewerMinimized, 'has-window': true }"
+        @click="emit('togglePhotoViewer')"
+        @mouseenter="handleMouseEnter('Fotos')"
+        @mouseleave="handleMouseLeave"
+      >
+         <span class="icon">🖼️</span>
+         <div class="active-indicator" :class="{ minimized: isPhotoViewerMinimized || focusedApp !== 'PhotoViewer' }"></div>
+         <Transition name="fade">
+           <div v-if="activeTooltip === 'Fotos'" class="custom-tooltip">Fotos</div>
+         </Transition>
       </div>
-      <div class="task-btn" title="Visual Studio Code">
-         <span class="icon">💻</span>
+
+      <div 
+        class="task-btn" 
+        :class="{ active: focusedApp === 'Edge' && !isEdgeMinimized, 'has-window': isEdgeOpen }"
+        @click="emit('toggleEdge')"
+        @mouseenter="handleMouseEnter('Microsoft Edge')"
+        @mouseleave="handleMouseLeave"
+      >
+         <img src="../../assets/windows/ms-edge.png" width="24" height="24" alt="Edge" />
+         <div v-if="isEdgeOpen" class="active-indicator" :class="{ minimized: isEdgeMinimized || focusedApp !== 'Edge' }"></div>
+         <Transition name="fade">
+           <div v-if="activeTooltip === 'Microsoft Edge'" class="custom-tooltip">Microsoft Edge</div>
+         </Transition>
       </div>
     </div>
 
     <div class="taskbar-right">
       <div class="tray-icons">
-         <span class="tray-icon">🔋</span>
-         <span class="tray-icon">🌐</span>
-         <span class="tray-icon">🔊</span>
+         <span class="tray-icon" @mouseenter="handleMouseEnter('Bateria')" @mouseleave="handleMouseLeave">🔋</span>
+         <span class="tray-icon" @mouseenter="handleMouseEnter('Rede')" @mouseleave="handleMouseLeave">🌐</span>
+         <span class="tray-icon" @mouseenter="handleMouseEnter('Som')" @mouseleave="handleMouseLeave">🔊</span>
       </div>
-      <div class="clock-container" :title="currentDate">
+      <div class="clock-container" @mouseenter="handleMouseEnter(currentDate)" @mouseleave="handleMouseLeave">
          <div class="time">{{ currentTime }}</div>
          <div class="date">{{ currentDate }}</div>
+         <Transition name="fade">
+           <div v-if="activeTooltip === currentDate" class="custom-tooltip">{{ currentDate }}</div>
+         </Transition>
       </div>
-      <div class="show-desktop" @click="emit('minimizeExplorer')"></div>
+      <div class="show-desktop" @click="emit('minimizeExplorer')" @mouseenter="handleMouseEnter('Mostrar área de trabalho')" @mouseleave="handleMouseLeave">
+          <Transition name="fade">
+            <div v-if="activeTooltip === 'Mostrar área de trabalho'" class="custom-tooltip" style="right: 0; left: auto;">Mostrar área de trabalho</div>
+          </Transition>
+      </div>
     </div>
   </div>
 </template>
@@ -133,9 +178,10 @@ onUnmounted(() => {
 }
 
 .taskbar-left {
-    flex: 1;
-    display: flex;
-    align-items: center;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex: 1; /* Allow left to grow and take space */
 }
 
 .taskbar-center {
@@ -163,32 +209,13 @@ onUnmounted(() => {
     position: relative;
 }
 
-.start-btn::before {
-    content: '';
-    position: absolute;
-    width: 40px;
-    height: 40px;
-    border-radius: 4px;
-    background: transparent;
-    transition: background 0.1s;
-    z-index: 0;
-}
-
-.start-btn:hover::before {
-    background: rgba(255, 255, 255, 0.1);
-}
-
-.start-btn svg {
-    position: relative;
-    z-index: 1;
-}
-
 .start-btn:hover svg path { fill: #60cdff; }
 
 .custom-tooltip {
     position: absolute;
     bottom: 54px;
-    left: 4px;
+    left: 50%;
+    transform: translateX(-50%);
     background: #1c355e;
     color: #fff;
     padding: 3px 10px;

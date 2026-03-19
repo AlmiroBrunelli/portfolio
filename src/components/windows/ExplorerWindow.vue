@@ -1,16 +1,9 @@
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import ResizableWindow from './ResizableWindow.vue'
 import ExplorerTopBar from './ExplorerTopBar.vue'
 import ExplorerSidebar from './ExplorerSidebar.vue'
 import ExplorerMainView from './ExplorerMainView.vue'
-
-const searchQuery = ref('')
-const isMaximized = ref(false)
-
-const handleSearch = (query) => {
-  searchQuery.value = query
-}
 
 const props = defineProps({
   isOpen: Boolean,
@@ -18,47 +11,92 @@ const props = defineProps({
   zIndex: Number
 })
 
-const emit = defineEmits(['close', 'minimize', 'open-file'])
+const emit = defineEmits(['close', 'minimize', 'open-file', 'update-path'])
 
-const currentPath = ref('Este Computador')
-const history = ref(['Este Computador'])
-const historyIndex = ref(0)
+const isMaximized = ref(false)
+const windowWidth = ref(window.innerWidth)
 
-const canGoBack = computed(() => historyIndex.value > 0)
-const canGoForward = computed(() => historyIndex.value < history.value.length - 1)
+const tabs = ref([
+  { 
+    id: 1, 
+    path: 'Este Computador', 
+    history: ['Este Computador'], 
+    historyIndex: 0,
+    searchQuery: ''
+  }
+])
+const activeTabId = ref(1)
+
+const activeTab = computed(() => tabs.value.find(t => t.id === activeTabId.value) || tabs.value[0])
+
+watch(() => activeTab.value?.path, (newPath) => {
+  if (newPath) emit('update-path', newPath)
+}, { immediate: true })
+
+const canGoBack = computed(() => activeTab.value.historyIndex > 0)
+const canGoForward = computed(() => activeTab.value.historyIndex < activeTab.value.history.length - 1)
 
 const navigateTo = (path, addToHistory = true) => {
-  if (path === currentPath.value) return
-  currentPath.value = path
+  if (path === activeTab.value.path) return
+  activeTab.value.path = path
   
   if (addToHistory) {
-    history.value = history.value.slice(0, historyIndex.value + 1)
-    history.value.push(path)
-    historyIndex.value = history.value.length - 1
+    activeTab.value.history = activeTab.value.history.slice(0, activeTab.value.historyIndex + 1)
+    activeTab.value.history.push(path)
+    activeTab.value.historyIndex = activeTab.value.history.length - 1
   }
 }
 
 const goBack = () => {
   if (canGoBack.value) {
-    historyIndex.value--
-    currentPath.value = history.value[historyIndex.value]
+    activeTab.value.historyIndex--
+    activeTab.value.path = activeTab.value.history[activeTab.value.historyIndex]
   }
 }
 
 const goForward = () => {
   if (canGoForward.value) {
-    historyIndex.value++
-    currentPath.value = history.value[historyIndex.value]
+    activeTab.value.historyIndex++
+    activeTab.value.path = activeTab.value.history[activeTab.value.historyIndex]
   }
 }
 
 const goUp = () => {
-  if (currentPath.value !== 'Este Computador') {
+  if (activeTab.value.path !== 'Este Computador') {
     navigateTo('Este Computador')
   }
 }
 
-const windowWidth = ref(window.innerWidth)
+const handleSearch = (query) => {
+  activeTab.value.searchQuery = query
+}
+
+const addTab = () => {
+  const newId = Date.now()
+  tabs.value.push({
+    id: newId,
+    path: 'Este Computador',
+    history: ['Este Computador'],
+    historyIndex: 0,
+    searchQuery: ''
+  })
+  activeTabId.value = newId
+}
+
+const closeTab = (id, event) => {
+  event?.stopPropagation()
+  if (tabs.value.length === 1) {
+    emit('close')
+    return
+  }
+  
+  const index = tabs.value.findIndex(t => t.id === id)
+  if (activeTabId.value === id) {
+    const nextTab = tabs.value[index + 1] || tabs.value[index - 1]
+    activeTabId.value = nextTab.id
+  }
+  tabs.value.splice(index, 1)
+}
 
 const handleResize = () => {
   windowWidth.value = window.innerWidth
@@ -92,22 +130,31 @@ onUnmounted(() => {
     >
       <template #header-center>
         <div class="explorer-tabs">
-          <div class="tab active">
-            <span class="icon">🏠</span>
-            <span class="label">Início</span>
-            <span class="close-tab">✕</span>
+          <div 
+            v-for="tab in tabs" 
+            :key="tab.id"
+            class="tab"
+            :class="{ active: activeTabId === tab.id }"
+            @click="activeTabId = tab.id"
+            @auxclick.prevent.stop="e => { if (e.button === 1) closeTab(tab.id) }"
+          >
+            <span class="icon">
+              {{ tab.path === 'Imagens' ? '🖼️' : tab.path === 'Documentos' ? '📄' : tab.path === 'OneDrive' ? '☁️' : '🏠' }}
+            </span>
+            <span class="label">{{ tab.path }}</span>
+            <span class="close-tab" @click="closeTab(tab.id, $event)">✕</span>
           </div>
-          <div class="add-tab">+</div>
+          <div class="add-tab" @click="addTab" title="Nova aba">+</div>
         </div>
       </template>
 
       <div class="explorer-container" :class="{ maximized: isMaximized }">
         <ExplorerTopBar 
           :isMaximized="isMaximized"
-          :currentPath="currentPath"
+          :currentPath="activeTab.path"
           :canGoBack="canGoBack"
           :canGoForward="canGoForward"
-          :canGoUp="currentPath !== 'Este Computador'"
+          :canGoUp="activeTab.path !== 'Este Computador'"
           @navigate="navigateTo"
           @back="goBack"
           @forward="goForward"
@@ -119,15 +166,15 @@ onUnmounted(() => {
         <div class="window-body">
           <ExplorerSidebar 
             v-if="showSidebar"
-            :currentPath="currentPath"
+            :currentPath="activeTab.path"
             @navigate="navigateTo"
           />
           <ExplorerMainView 
-            :currentPath="currentPath"
+            :currentPath="activeTab.path"
             @navigate="navigateTo"
             @open-file="path => emit('open-file', path)"
             :compact="!showSidebar"
-            :searchQuery="searchQuery"
+            :searchQuery="activeTab.searchQuery"
           />
         </div>
       </div>
@@ -150,40 +197,70 @@ onUnmounted(() => {
   height: 100%;
   gap: 2px;
   padding-left: 2px;
+  padding-top: 4px;
 }
 
 .tab {
   height: 32px;
-  background: #f3f3f3;
+  background: rgba(243, 243, 243, 0.8);
   border-top-left-radius: 8px;
   border-top-right-radius: 8px;
   display: flex;
   align-items: center;
   padding: 0 12px;
   gap: 8px;
-  font-size: 12px;
-  min-width: 160px;
-  color: #333;
-  border: 1px solid #ddd;
+  font-size: 11px;
+  min-width: 140px;
+  max-width: 200px;
+  color: #555;
+  border: 1px solid transparent;
   border-bottom: none;
-  cursor: default;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.tab:hover {
+  background: #fdfdfd;
 }
 
 .tab.active {
   background: #fff;
   border-color: #ddd;
+  color: #000;
+  box-shadow: 0 -2px 5px rgba(0,0,0,0.02);
 }
 
 .close-tab {
   margin-left: auto;
-  font-size: 10px;
-  cursor: pointer;
+  font-size: 9px;
+  width: 16px;
+  height: 16px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 4px;
+  transition: background 0.2s;
+}
+
+.close-tab:hover {
+  background: rgba(0,0,0,0.1);
 }
 
 .add-tab {
-  padding: 0 8px;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   cursor: pointer;
-  font-size: 16px;
+  font-size: 18px;
+  border-radius: 4px;
+  margin-bottom: 2px;
+  color: #555;
+}
+
+.add-tab:hover {
+  background: rgba(0,0,0,0.05);
 }
 
 .window-body {

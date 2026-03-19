@@ -42,19 +42,31 @@ const clearSearch = () => {
           :class="{ disabled: !canGoBack }" 
           title="Voltar"
           @click="canGoBack && emit('back')"
-        >←</button>
+        >
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M15 18l-6-6 6-6"/>
+          </svg>
+        </button>
         <button 
           class="nav-btn" 
           :class="{ disabled: !canGoForward }" 
           title="Avançar"
           @click="canGoForward && emit('forward')"
-        >→</button>
+        >
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 6l6 6-6 6"/>
+          </svg>
+        </button>
         <button 
           class="nav-btn" 
           :class="{ disabled: !canGoUp }" 
           title="Subir"
           @click="canGoUp && emit('up')"
-        >↑</button>
+        >
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M6 15l6-6 6 6"/>
+          </svg>
+        </button>
         <button 
           class="nav-btn" 
           title="Atualizar"

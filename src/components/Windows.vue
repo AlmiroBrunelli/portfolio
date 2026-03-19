@@ -5,12 +5,20 @@ import Taskbar from './windows/Taskbar.vue'
 import StartMenu from './windows/StartMenu.vue'
 import PhotoViewer from './windows/PhotoViewer.vue'
 import Calculator from './windows/Calculator.vue'
+import EdgeWindow from './windows/EdgeWindow.vue'
 
 const isExplorerOpen = ref(true)
 const isExplorerMinimized = ref(false)
 const isStartMenuOpen = ref(false)
 const isCalculatorOpen = ref(false)
 const isCalculatorMinimized = ref(false)
+const isEdgeOpen = ref(false)
+const isEdgeMinimized = ref(false)
+const openedPhoto = ref(null)
+const photoList = ref([])
+const photoIndex = ref(0)
+const isPhotoViewerMinimized = ref(false)
+const explorerPath = ref('Este Computador')
 const focusedApp = ref('Explorer')
 
 // Z-index & Focus Order Management
@@ -18,9 +26,10 @@ const nextZIndex = ref(200)
 const zIndices = ref({
   Explorer: 100,
   PhotoViewer: 101,
-  Calculator: 102
+  Calculator: 102,
+  Edge: 103
 })
-const windowOrder = ref(['Explorer', 'PhotoViewer', 'Calculator'])
+const windowOrder = ref(['Explorer', 'PhotoViewer', 'Calculator', 'Edge'])
 
 const bringToFront = (app) => {
   // Move to end of order array
@@ -51,8 +60,38 @@ const findNewFocus = () => {
       focusedApp.value = 'PhotoViewer'
       return
     }
+    if (app === 'Edge' && isEdgeOpen.value && !isEdgeMinimized.value) {
+      focusedApp.value = 'Edge'
+      return
+    }
   }
   focusedApp.value = null
+}
+
+const togglePhotoViewer = () => {
+  if (openedPhoto.value) {
+    if (focusedApp.value !== 'PhotoViewer' || isPhotoViewerMinimized.value) {
+      isPhotoViewerMinimized.value = false
+      bringToFront('PhotoViewer')
+    } else {
+      isPhotoViewerMinimized.value = true
+      findNewFocus()
+    }
+  }
+}
+
+const toggleEdge = () => {
+  if (!isEdgeOpen.value) {
+    isEdgeOpen.value = true
+    isEdgeMinimized.value = false
+    bringToFront('Edge')
+  } else if (focusedApp.value !== 'Edge' || isEdgeMinimized.value) {
+    isEdgeMinimized.value = false
+    bringToFront('Edge')
+  } else {
+    isEdgeMinimized.value = true
+    findNewFocus()
+  }
 }
 
 const toggleCalculator = () => {
@@ -116,7 +155,8 @@ onMounted(() => {
         @close="closeExplorer"
         @minimize="minimizeExplorer"
         @maximize="bringToFront('Explorer')"
-        @open-file="data => { openedPhoto = data.path; photoList = data.list; photoIndex = data.index; bringToFront('PhotoViewer') }"
+        @open-file="data => { openedPhoto = data.path; photoList = data.list; photoIndex = data.index; isPhotoViewerMinimized = false; bringToFront('PhotoViewer') }"
+        @update-path="path => explorerPath = path"
         @mousedown="bringToFront('Explorer')"
       />
       
@@ -128,6 +168,7 @@ onMounted(() => {
         @close="isStartMenuOpen = false"
         @open-app="app => { 
           if (app === 'Calculator') toggleCalculator(); 
+          if (app === 'Edge') toggleEdge();
           isStartMenuOpen = false;
         }"
       />
@@ -135,16 +176,17 @@ onMounted(() => {
       <!-- Photo Viewer -->
       <PhotoViewer 
         v-if="openedPhoto"
+        v-show="!isPhotoViewerMinimized"
         :src="openedPhoto"
         :photos="photoList"
         :initialIndex="photoIndex"
         :isOpen="!!openedPhoto"
         :zIndex="zIndices.PhotoViewer"
         @close="openedPhoto = null; findNewFocus()"
+        @minimize="isPhotoViewerMinimized = true; findNewFocus()"
         @maximize="bringToFront('PhotoViewer')"
         @mousedown="bringToFront('PhotoViewer')"
       />
-
       <!-- Calculator -->
       <Calculator 
         v-if="isCalculatorOpen"
@@ -156,6 +198,18 @@ onMounted(() => {
         @maximize="bringToFront('Calculator')"
         @mousedown="bringToFront('Calculator')"
       />
+
+      <!-- Edge Browser -->
+      <EdgeWindow 
+        v-if="isEdgeOpen"
+        v-show="!isEdgeMinimized"
+        :isMinimized="isEdgeMinimized"
+        :zIndex="zIndices.Edge"
+        @close="isEdgeOpen = false; findNewFocus()"
+        @minimize="isEdgeMinimized = true; findNewFocus()"
+        @maximize="bringToFront('Edge')"
+        @mousedown="bringToFront('Edge')"
+      />
     </div>
 
     <!-- Taskbar -->
@@ -164,10 +218,17 @@ onMounted(() => {
       :isExplorerMinimized="isExplorerMinimized"
       :isCalculatorOpen="isCalculatorOpen"
       :isCalculatorMinimized="isCalculatorMinimized"
+      :isEdgeOpen="isEdgeOpen"
+      :isEdgeMinimized="isEdgeMinimized"
+      :isPhotoViewerOpen="!!openedPhoto"
+      :isPhotoViewerMinimized="isPhotoViewerMinimized"
+      :explorerPath="explorerPath"
       :focusedApp="focusedApp"
       @toggleExplorer="toggleExplorer"
       @minimizeExplorer="minimizeExplorer"
       @toggleCalculator="toggleCalculator"
+      @toggleEdge="toggleEdge"
+      @togglePhotoViewer="togglePhotoViewer"
       @toggleStartMenu="toggleStartMenu"
     />
   </div>

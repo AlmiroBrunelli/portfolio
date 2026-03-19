@@ -15,7 +15,7 @@ const props = defineProps({
   zIndex: Number
 })
 
-const emit = defineEmits(['close'])
+const emit = defineEmits(['close', 'minimize', 'maximize'])
 
 const currentIndex = ref(props.initialIndex)
 const zoomLevel = ref(100)
@@ -98,7 +98,8 @@ watch(() => props.initialIndex, (newVal) => {
       :initialSize="{ width: 900, height: 700 }"
       :style="{ zIndex: zIndex }"
       @close="emit('close')"
-      @maximize="val => isMaximized = val"
+      @minimize="emit('minimize')"
+      @maximize="val => { isMaximized = val; emit('maximize', val) }"
     >
       <div class="viewer-container" :class="{ maximized: isMaximized }">
         <div class="viewer-header-tools">
@@ -150,7 +151,10 @@ watch(() => props.initialIndex, (newVal) => {
                 </div>
               </div>
               <button class="zoom-btn" @click="isZoomListVisible = !isZoomListVisible">
-                {{ Math.round(zoomLevel) }}% <img src="../../assets/windows/arrow-down.png" width="8" height="8" alt="Seta" style="filter: invert(1); margin-left: 4px;" />
+                {{ Math.round(zoomLevel) }}% 
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-left: 4px;">
+                  <path d="M6 9l6 6 6-6"/>
+                </svg>
               </button>
             </div>
             
