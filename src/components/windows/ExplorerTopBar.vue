@@ -34,27 +34,7 @@ const clearSearch = () => {
 </script>
 
 <template>
-  <div class="explorer-header">
-    <div class="title-bar" @mousedown="$emit('dragstart', $event)" @dblclick="$emit('maximize')">
-      <div class="tabs-container">
-        <div class="tab active">
-          <span class="icon">🏠</span>
-          <span class="label">Início</span>
-          <span class="close-tab">✕</span>
-        </div>
-        <div class="add-tab">+</div>
-      </div>
-      <div class="window-controls">
-        <div class="control-btn" @click.stop="$emit('minimize')">
-          <img src="../../assets/windows/minimize.png" width="12" height="12" alt="Minimizar" />
-        </div>
-        <div class="control-btn" @click.stop="$emit('maximize')">
-          {{ isMaximized ? '❐' : '□' }}
-        </div>
-        <div class="control-btn close" @click.stop="$emit('close')">✕</div>
-      </div>
-    </div>
-    
+  <div class="explorer-nav-toolbar">
     <div class="address-bar-container">
       <div class="nav-buttons">
         <button 
@@ -112,94 +92,12 @@ const clearSearch = () => {
   user-select: none;
 }
 
-.title-bar {
-  height: 40px;
+.explorer-nav-toolbar {
   display: flex;
-  justify-content: space-between;
-  align-items: flex-end;
-  padding-left: 10px;
+  flex-direction: column;
+  background: #f3f3f3;
+  user-select: none;
 }
-
-.tabs-container {
-  display: flex;
-  align-items: flex-end;
-  height: 100%;
-  gap: 4px;
-}
-
-.tab {
-  height: 32px;
-  background: #fff;
-  border-radius: 8px 8px 0 0;
-  display: flex;
-  align-items: center;
-  padding: 0 12px;
-  gap: 8px;
-  font-size: 12px;
-  min-width: 160px;
-  box-shadow: 0 -2px 5px rgba(0,0,0,0.05);
-  position: relative;
-  color: #1a1a1a;
-}
-
-.tab.active::after {
-    content: '';
-    position: absolute;
-    bottom: -1px;
-    left: 0;
-    width: 100%;
-    height: 1px;
-    background: #fff;
-}
-
-.close-tab {
-  margin-left: auto;
-  opacity: 0.6;
-  cursor: pointer;
-  padding: 2px;
-  border-radius: 4px;
-}
-
-.close-tab:hover {
-  background: rgba(0,0,0,0.1);
-  opacity: 1;
-}
-
-.add-tab {
-  width: 28px;
-  height: 28px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 18px;
-  margin-bottom: 4px;
-  color: #1a1a1a;
-}
-
-.add-tab:hover { background: rgba(0,0,0,0.05); }
-
-.window-controls {
-  display: flex;
-  height: 100%;
-  align-items: flex-start;
-}
-
-.control-btn {
-  width: 46px;
-  height: 32px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  cursor: pointer;
-  font-size: 14px;
-  transition: background 0.2s;
-  color: #1a1a1a;
-}
-
-.control-btn:hover { background: rgba(0,0,0,0.1); }
-.control-btn.close:hover { background: #e81123; color: white; }
 
 .address-bar-container {
   height: 48px;

@@ -1,14 +1,14 @@
 <script setup>
 import { ref } from 'vue'
 
-const emit = defineEmits(['change-os', 'close'])
+const emit = defineEmits(['change-os', 'close', 'open-app'])
 
 const pinnedApps = [
   { name: 'Edge', icon: '🌐' },
   { name: 'Word', icon: '📝' },
   { name: 'Photos', icon: '🖼️' },
   { name: 'Settings', icon: 'cog.png' },
-  { name: 'Calculator', icon: '🔢' },
+  { name: 'Calculator', icon: 'calculator.png' },
   { name: 'Spotify', icon: '🎵' },
   { name: 'VS Code', icon: '💻' },
   { name: 'Terminal', icon: '🐚' },
@@ -41,8 +41,8 @@ const recommendedFiles = [
           <button class="all-apps">Todos os aplicativos ></button>
         </div>
         <div class="apps-grid">
-          <div v-for="app in pinnedApps" :key="app.name" class="app-item">
-            <img v-if="app.name === 'Settings'" :src="'/src/assets/windows/' + app.icon" width="32" height="32" :alt="app.name" />
+          <div v-for="app in pinnedApps" :key="app.name" class="app-item" @click="emit('open-app', app.name)">
+            <img v-if="app.icon.endsWith('.png')" :src="'/src/assets/windows/' + app.icon" width="32" height="32" :alt="app.name" />
             <span v-else class="app-icon">{{ app.icon }}</span>
             <span class="app-name">{{ app.name }}</span>
           </div>

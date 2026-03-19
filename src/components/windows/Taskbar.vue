@@ -3,14 +3,35 @@ import { ref, onMounted, onUnmounted } from 'vue'
 
 defineProps({
   isExplorerOpen: Boolean,
-  isExplorerMinimized: Boolean
+  isExplorerMinimized: Boolean,
+  isCalculatorOpen: Boolean,
+  isCalculatorMinimized: Boolean,
+  focusedApp: String
 })
 
-const emit = defineEmits(['toggleExplorer', 'minimizeExplorer', 'toggleStartMenu'])
+const emit = defineEmits(['toggleExplorer', 'minimizeExplorer', 'toggleStartMenu', 'toggleCalculator'])
 
 const currentTime = ref('')
 const currentDate = ref('')
 const isStartHovered = ref(false)
+const showTooltip = ref(false)
+let tooltipTimeout = null
+
+const handleStartMouseEnter = () => {
+  isStartHovered.value = true
+  tooltipTimeout = setTimeout(() => {
+    showTooltip.value = true
+  }, 1000)
+}
+
+const handleStartMouseLeave = () => {
+  isStartHovered.value = false
+  showTooltip.value = false
+  if (tooltipTimeout) {
+    clearTimeout(tooltipTimeout)
+    tooltipTimeout = null
+  }
+}
 
 const updateTime = () => {
   const now = new Date()
@@ -35,11 +56,13 @@ onUnmounted(() => {
       <div 
         class="start-btn" 
         @click="emit('toggleStartMenu')"
-        @mouseenter="isStartHovered = true"
-        @mouseleave="isStartHovered = false"
+        @mouseenter="handleStartMouseEnter"
+        @mouseleave="handleStartMouseLeave"
       >
         <img src="../../assets/windows/windows.png" width="24" height="24" alt="Windows" />
-        <div v-if="isStartHovered" class="custom-tooltip">Iniciar</div>
+        <Transition name="fade">
+          <div v-if="showTooltip" class="custom-tooltip">Iniciar</div>
+        </Transition>
       </div>
       <div class="search-container">
         <div class="search-icon">🔍</div>
@@ -53,13 +76,25 @@ onUnmounted(() => {
     <div class="taskbar-center">
       <div 
         class="task-btn" 
-        :class="{ active: isExplorerOpen && !isExplorerMinimized, 'has-window': isExplorerOpen }"
+        :class="{ active: focusedApp === 'Explorer' && !isExplorerMinimized, 'has-window': isExplorerOpen }"
         title="Este Computador"
         @click="emit('toggleExplorer')"
       >
          <span class="icon">📂</span>
-         <div v-if="isExplorerOpen" class="active-indicator"></div>
+         <div v-if="isExplorerOpen" class="active-indicator" :class="{ minimized: isExplorerMinimized || focusedApp !== 'Explorer' }"></div>
       </div>
+      
+      <div 
+        v-if="isCalculatorOpen"
+        class="task-btn" 
+        :class="{ active: focusedApp === 'Calculator' && !isCalculatorMinimized, 'has-window': true }"
+        title="Calculadora"
+        @click="emit('toggleCalculator')"
+      >
+         <img src="../../assets/windows/calculator.png" width="24" height="24" alt="Calculadora" />
+         <div class="active-indicator" :class="{ minimized: isCalculatorMinimized || focusedApp !== 'Calculator' }"></div>
+      </div>
+
       <div class="task-btn" title="Microsoft Edge">
          <span class="icon">🌐</span>
       </div>
@@ -152,17 +187,25 @@ onUnmounted(() => {
 
 .custom-tooltip {
     position: absolute;
-    bottom: 56px;
+    bottom: 54px;
     left: 4px;
-    background: #e1e1e1;
-    color: #333;
-    padding: 3px 8px;
-    font-size: 12px;
+    background: #1c355e;
+    color: #fff;
+    padding: 3px 10px;
+    font-size: 11px;
     white-space: nowrap;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
     pointer-events: none;
     z-index: 2000;
-    border: 1px solid #999;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+}
+
+.fade-enter-active, .fade-leave-active {
+  transition: opacity 0.2s;
+}
+.fade-enter-from, .fade-leave-to {
+  opacity: 0;
 }
 
 .search-container {
@@ -202,8 +245,8 @@ onUnmounted(() => {
 }
 
 .task-btn:hover { background: rgba(255, 255, 255, 0.1); }
-.task-btn.has-window { background: rgba(255, 255, 255, 0.05); }
 .task-btn.active { background: rgba(255, 255, 255, 0.15); }
+/* No background for has-window unless active */
 
 .icon { font-size: 20px; }
 
@@ -214,6 +257,17 @@ onUnmounted(() => {
     height: 3px;
     background: #60cdff;
     border-radius: 2px;
+    transition: width 0.2s, opacity 0.2s;
+    opacity: 0; /* Hidden by default */
+}
+
+.active.task-btn .active-indicator {
+    opacity: 1; /* Only show when active (focused) */
+}
+
+.active-indicator.minimized {
+    width: 2px;
+    opacity: 0.5;
 }
 
 .taskbar-right { gap: 2px; }

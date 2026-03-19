@@ -1,5 +1,6 @@
 <script setup>
-import { ref, onMounted, onUnmounted, computed, watch } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
+import ResizableWindow from './ResizableWindow.vue'
 
 const props = defineProps({
   photos: {
@@ -10,7 +11,8 @@ const props = defineProps({
     type: Number,
     default: 0
   },
-  isOpen: Boolean
+  isOpen: Boolean,
+  zIndex: Number
 })
 
 const emit = defineEmits(['close'])
@@ -23,15 +25,6 @@ const isZoomListVisible = ref(false)
 const zoomOptions = [800, 700, 600, 500, 400, 300, 200, 100, 75, 50, 25, 10]
 
 const currentPhoto = computed(() => props.photos[currentIndex.value] || {})
-
-// Window Geometry State
-const pos = ref({ x: 0, y: 0 })
-const size = ref({ width: 0, height: 0 })
-const isDragging = ref(false)
-const dragOffset = ref({ x: 0, y: 0 })
-const isResizing = ref(false)
-const resizeType = ref('')
-const resizeStart = ref({ mouseX: 0, mouseY: 0, winX: 0, winY: 0, winW: 0, winH: 0 })
 
 const next = () => {
     if (currentIndex.value < props.photos.length - 1) {
@@ -75,156 +68,18 @@ const handleWheel = (e) => {
   }
 }
 
-// Dragging Logic
-const startDrag = (e) => {
-  if (isMaximized.value) return
-  isDragging.value = true
-  dragOffset.value = {
-    x: e.clientX - pos.value.x,
-    y: e.clientY - pos.value.y
-  }
-  window.addEventListener('mousemove', onDrag)
-  window.addEventListener('mouseup', stopDrag)
-}
-
-const onDrag = (e) => {
-  if (!isDragging.value) return
-  pos.value = {
-    x: e.clientX - dragOffset.value.x,
-    y: e.clientY - dragOffset.value.y
-  }
-}
-
-const stopDrag = () => {
-  isDragging.value = false
-  window.removeEventListener('mousemove', onDrag)
-  window.removeEventListener('mouseup', stopDrag)
-}
-
-// Resizing Logic
-const startResize = (e, type) => {
-  if (isMaximized.value) return
-  isResizing.value = true
-  resizeType.value = type
-  resizeStart.value = {
-    mouseX: e.clientX,
-    mouseY: e.clientY,
-    winX: pos.value.x,
-    winY: pos.value.y,
-    winW: size.value.width,
-    winH: size.value.height
-  }
-  window.addEventListener('mousemove', onResize)
-  window.addEventListener('mouseup', stopResize)
-}
-
-const onResize = (e) => {
-  if (!isResizing.value) return
-  
-  const dx = e.clientX - resizeStart.value.mouseX
-  const dy = e.clientY - resizeStart.value.mouseY
-  const minW = 400
-  const minH = 300
-
-  let newX = resizeStart.value.winX
-  let newY = resizeStart.value.winY
-  let newW = resizeStart.value.winW
-  let newH = resizeStart.value.winH
-
-  if (resizeType.value.includes('e')) newW = Math.max(minW, resizeStart.value.winW + dx)
-  if (resizeType.value.includes('s')) newH = Math.max(minH, resizeStart.value.winH + dy)
-  if (resizeType.value.includes('w')) {
-    const maxWidth = resizeStart.value.winX + resizeStart.value.winW - minW
-    newX = Math.min(maxWidth, resizeStart.value.winX + dx)
-    newW = resizeStart.value.winW - (newX - resizeStart.value.winX)
-  }
-  if (resizeType.value.includes('n')) {
-    const maxHeight = resizeStart.value.winY + resizeStart.value.winH - minH
-    newY = Math.min(maxHeight, resizeStart.value.winY + dy)
-    newH = resizeStart.value.winH - (newY - resizeStart.value.winY)
-  }
-
-  pos.value = { x: newX, y: newY }
-  size.value = { width: newW, height: newH }
-}
-
-const stopResize = () => {
-  isResizing.value = false
-  window.removeEventListener('mousemove', onResize)
-  window.removeEventListener('mouseup', stopResize)
-}
-
-const windowStyle = computed(() => {
-  if (isMaximized.value) {
-    return {
-      top: '0',
-      left: '0',
-      width: '100%',
-      height: '100%',
-      transform: 'none',
-      borderRadius: '0'
-    }
-  }
-  return {
-    top: `${pos.value.y}px`,
-    left: `${pos.value.x}px`,
-    width: `${size.value.width}px`,
-    height: `${size.value.height}px`,
-  }
-})
-
 const handleKeydown = (e) => {
-    if (e.key === 'ArrowRight') next()
-    if (e.key === 'ArrowLeft') prev()
-    if (e.key === 'Escape') emit('close')
-}
-
-const windowWidth = ref(window.innerWidth)
-
-const handleResize = () => {
-  windowWidth.value = window.innerWidth
-  const desktopWidth = window.innerWidth
-  const desktopHeight = window.innerHeight - 48
-
-  // Keep window size within desktop
-  size.value = {
-    width: Math.min(size.value.width, desktopWidth),
-    height: Math.min(size.value.height, desktopHeight)
-  }
-
-  // Keep window position within desktop
-  pos.value = {
-    x: Math.min(pos.value.x, desktopWidth - size.value.width),
-    y: Math.min(pos.value.y, desktopHeight - size.value.height)
-  }
-
-  // Ensure x and y are not negative
-  pos.value.x = Math.max(0, pos.value.x)
-  pos.value.y = Math.max(0, pos.value.y)
+  if (e.key === 'ArrowLeft') prev()
+  if (e.key === 'ArrowRight') next()
+  if (e.key === 'Escape') emit('close')
 }
 
 onMounted(() => {
-    window.addEventListener('keydown', handleKeydown)
-    // Initialize size and center
-    const desktopHeight = window.innerHeight - 48
-    size.value = {
-      width: Math.min(windowWidth.value * 0.9, 1200),
-      height: Math.min(desktopHeight * 0.9, 800)
-    }
-    pos.value = {
-      x: (windowWidth.value - size.value.width) / 2,
-      y: (desktopHeight - size.value.height) / 2
-    }
-    window.addEventListener('resize', handleResize)
+  window.addEventListener('keydown', handleKeydown)
 })
 
 onUnmounted(() => {
-    window.removeEventListener('keydown', handleKeydown)
-    window.removeEventListener('mousemove', onDrag)
-    window.removeEventListener('mouseup', stopDrag)
-    window.removeEventListener('mousemove', onResize)
-    window.removeEventListener('mouseup', stopResize)
-    window.removeEventListener('resize', handleResize)
+  window.removeEventListener('keydown', handleKeydown)
 })
 
 watch(() => props.initialIndex, (newVal) => {
@@ -235,41 +90,23 @@ watch(() => props.initialIndex, (newVal) => {
 
 <template>
   <Transition name="photo-fade">
-    <div v-if="isOpen" class="photo-viewer-overlay" @click.self="emit('close')">
-      <div class="photo-viewer" :class="{ maximized: isMaximized }" :style="windowStyle">
-        <!-- Resize Handles -->
-        <template v-if="!isMaximized">
-          <div class="resizer n" @mousedown.stop="startResize($event, 'n')"></div>
-          <div class="resizer s" @mousedown.stop="startResize($event, 's')"></div>
-          <div class="resizer e" @mousedown.stop="startResize($event, 'e')"></div>
-          <div class="resizer w" @mousedown.stop="startResize($event, 'w')"></div>
-          <div class="resizer ne" @mousedown.stop="startResize($event, 'ne')"></div>
-          <div class="resizer nw" @mousedown.stop="startResize($event, 'nw')"></div>
-          <div class="resizer se" @mousedown.stop="startResize($event, 'se')"></div>
-          <div class="resizer sw" @mousedown.stop="startResize($event, 'sw')"></div>
-        </template>
-
-        <div class="viewer-header" @mousedown="startDrag">
-          <div class="header-left">
-            <span class="app-icon">🖼️</span>
-            <div class="file-name">{{ currentPhoto.label }} - Fotos</div>
-          </div>
-          
-          <div class="header-tools" @mousedown.stop>
+    <ResizableWindow
+      v-if="isOpen"
+      :title="`${currentPhoto.label || 'Foto'} - Fotos`"
+      icon="🖼️"
+      :darkMode="true"
+      :initialSize="{ width: 900, height: 700 }"
+      :style="{ zIndex: zIndex }"
+      @close="emit('close')"
+      @maximize="val => isMaximized = val"
+    >
+      <div class="viewer-container" :class="{ maximized: isMaximized }">
+        <div class="viewer-header-tools">
+          <div class="header-tools-left">
             <button class="tool-btn" title="Zoom In" @click="zoomIn">🔍+</button>
             <button class="tool-btn" title="Zoom Out" @click="zoomOut">🔍-</button>
             <button class="tool-btn" title="Girar">🔄</button>
             <button class="tool-btn" title="Excluir">🗑️</button>
-          </div>
-
-          <div class="window-controls" @mousedown.stop>
-            <button class="control-btn" title="Minimizar" @click="emit('close')">
-              <img src="../../assets/windows/minimize.png" width="12" height="12" alt="Minimizar" style="filter: invert(1);" />
-            </button>
-            <button class="control-btn" :title="isMaximized ? 'Restaurar' : 'Maximizar'" @click="isMaximized = !isMaximized">
-              {{ isMaximized ? '❐' : '□' }}
-            </button>
-            <button class="control-btn close" title="Fechar" @click="emit('close')">✕</button>
           </div>
         </div>
         
@@ -331,91 +168,26 @@ watch(() => props.initialIndex, (newVal) => {
           </div>
         </div>
       </div>
-    </div>
+    </ResizableWindow>
   </Transition>
 </template>
 
 <style scoped>
-.photo-viewer-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.4);
-  backdrop-filter: blur(5px);
-  z-index: 2000;
-}
-
-.photo-viewer {
-  position: absolute;
-  background: #1c1c1c;
-  border-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+.viewer-container {
   display: flex;
   flex-direction: column;
-  overflow: visible;
-  box-shadow: 0 20px 60px rgba(0,0,0,0.6);
-  z-index: 2001;
-}
-
-.photo-viewer.maximized {
-  border-radius: 0;
-  border: none;
+  flex: 1;
+  background: #1c1c1c;
   overflow: hidden;
 }
 
-/* Resize Handles */
-.resizer {
-  position: absolute;
-  z-index: 10;
-}
-
-.resizer.n, .resizer.s { height: 6px; left: 4px; right: 4px; cursor: ns-resize; }
-.resizer.e, .resizer.w { width: 6px; top: 4px; bottom: 4px; cursor: ew-resize; }
-.resizer.n { top: -3px; }
-.resizer.s { bottom: -3px; }
-.resizer.e { right: -3px; }
-.resizer.w { left: -3px; }
-
-.resizer.ne, .resizer.nw, .resizer.se, .resizer.sw {
-  width: 10px;
-  height: 10px;
-  z-index: 11;
-}
-
-.resizer.nw { top: -5px; left: -5px; cursor: nwse-resize; }
-.resizer.ne { top: -5px; right: -5px; cursor: nesw-resize; }
-.resizer.sw { bottom: -5px; left: -5px; cursor: nesw-resize; }
-.resizer.se { bottom: -5px; right: -5px; cursor: nwse-resize; }
-
-.viewer-header {
+.viewer-header-tools {
   height: 40px;
   background: #1c1c1c;
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
-  padding: 0 4px 0 12px;
-  color: #fff;
-  cursor: default;
-}
-
-.header-left {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 12px;
-  pointer-events: none;
-}
-
-.app-icon { font-size: 14px; }
-
-.header-tools {
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
-  display: flex;
-  gap: 4px;
+  padding: 0 12px;
 }
 
 .tool-btn {
@@ -429,27 +201,6 @@ watch(() => props.initialIndex, (newVal) => {
 }
 
 .tool-btn:hover { background: rgba(255, 255, 255, 0.1); }
-
-.window-controls {
-  display: flex;
-}
-
-.control-btn {
-  width: 46px;
-  height: 32px;
-  background: transparent;
-  border: none;
-  color: #fff;
-  cursor: pointer;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-size: 14px;
-  transition: background 0.2s;
-}
-
-.control-btn:hover { background: rgba(255, 255, 255, 0.1); }
-.control-btn.close:hover { background: #e81123; }
 
 .image-container {
   flex: 1;
