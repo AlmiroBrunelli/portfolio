@@ -1,10 +1,23 @@
 <script setup>
 defineProps({
   isMaximized: Boolean,
-  currentPath: String
+  currentPath: String,
+  canGoBack: Boolean,
+  canGoForward: Boolean,
+  canGoUp: Boolean
 })
 
-const emit = defineEmits(['minimize', 'maximize', 'close', 'dragstart', 'navigate'])
+const emit = defineEmits([
+  'minimize', 
+  'maximize', 
+  'close', 
+  'dragstart', 
+  'navigate',
+  'back',
+  'forward',
+  'up',
+  'refresh'
+])
 </script>
 
 <template>
@@ -29,18 +42,39 @@ const emit = defineEmits(['minimize', 'maximize', 'close', 'dragstart', 'navigat
     
     <div class="address-bar-container">
       <div class="nav-buttons">
-        <button class="nav-btn" title="Voltar">←</button>
-        <button class="nav-btn" title="Avançar">→</button>
-        <button class="nav-btn" title="Subir">↑</button>
-        <button class="nav-btn" title="Atualizar">↻</button>
+        <button 
+          class="nav-btn" 
+          :class="{ disabled: !canGoBack }" 
+          title="Voltar"
+          @click="canGoBack && emit('back')"
+        >←</button>
+        <button 
+          class="nav-btn" 
+          :class="{ disabled: !canGoForward }" 
+          title="Avançar"
+          @click="canGoForward && emit('forward')"
+        >→</button>
+        <button 
+          class="nav-btn" 
+          :class="{ disabled: !canGoUp }" 
+          title="Subir"
+          @click="canGoUp && emit('up')"
+        >↑</button>
+        <button 
+          class="nav-btn" 
+          title="Atualizar"
+          @click="emit('refresh')"
+        >↻</button>
       </div>
       
       <div class="address-box">
         <div class="address-icon">{{ currentPath === 'Imagens' ? '🖼️' : '🏠' }}</div>
         <div class="breadcrumbs">
           <span class="crumb" @click="emit('navigate', 'Este Computador')">Este Computador</span>
-          <span class="separator">></span>
-          <span v-if="currentPath !== 'Este Computador'" class="crumb">{{ currentPath }}</span>
+          <template v-if="currentPath !== 'Este Computador'">
+            <span class="separator">></span>
+            <span class="crumb" @click="emit('navigate', currentPath)">{{ currentPath }}</span>
+          </template>
         </div>
       </div>
       
@@ -179,6 +213,11 @@ const emit = defineEmits(['minimize', 'maximize', 'close', 'dragstart', 'navigat
 }
 
 .nav-btn:hover { background: rgba(0,0,0,0.05); }
+.nav-btn.disabled {
+  opacity: 0.3;
+  cursor: default;
+  pointer-events: none;
+}
 
 .address-box {
   flex: 1;

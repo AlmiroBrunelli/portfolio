@@ -12,9 +12,41 @@ const props = defineProps({
 const emit = defineEmits(['close', 'minimize', 'maximize', 'close', 'toggle'])
 
 const currentPath = ref('Este Computador')
+const history = ref(['Este Computador'])
+const historyIndex = ref(0)
 
-const navigateTo = (path) => {
+const canGoBack = computed(() => historyIndex.value > 0)
+const canGoForward = computed(() => historyIndex.value < history.value.length - 1)
+
+const navigateTo = (path, addToHistory = true) => {
+  if (path === currentPath.value) return
   currentPath.value = path
+  
+  if (addToHistory) {
+    history.value = history.value.slice(0, historyIndex.value + 1)
+    history.value.push(path)
+    historyIndex.value = history.value.length - 1
+  }
+}
+
+const goBack = () => {
+  if (canGoBack.value) {
+    historyIndex.value--
+    currentPath.value = history.value[historyIndex.value]
+  }
+}
+
+const goForward = () => {
+  if (canGoForward.value) {
+    historyIndex.value++
+    currentPath.value = history.value[historyIndex.value]
+  }
+}
+
+const goUp = () => {
+  if (currentPath.value !== 'Este Computador') {
+    navigateTo('Este Computador')
+  }
 }
 
 const isMaximized = ref(false)
@@ -166,11 +198,18 @@ onUnmounted(() => {
       <ExplorerTopBar 
         :isMaximized="isMaximized"
         :currentPath="currentPath"
+        :canGoBack="canGoBack"
+        :canGoForward="canGoForward"
+        :canGoUp="currentPath !== 'Este Computador'"
         @minimize="emit('minimize')"
         @maximize="isMaximized = !isMaximized"
         @close="emit('close')"
         @dragstart="startDrag"
         @navigate="navigateTo"
+        @back="goBack"
+        @forward="goForward"
+        @up="goUp"
+        @refresh="() => {}"
       />
       
       <div class="window-body">
