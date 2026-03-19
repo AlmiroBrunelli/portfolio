@@ -10,6 +10,7 @@ const emit = defineEmits(['toggleExplorer', 'minimizeExplorer', 'toggleStartMenu
 
 const currentTime = ref('')
 const currentDate = ref('')
+const isStartHovered = ref(false)
 
 const updateTime = () => {
   const now = new Date()
@@ -31,10 +32,14 @@ onUnmounted(() => {
 <template>
   <div class="taskbar">
     <div class="taskbar-left">
-      <div class="start-btn" title="Iniciar" @click="emit('toggleStartMenu')">
-        <svg viewBox="0 0 88 88" xmlns="http://www.w3.org/2000/svg" width="20" height="20">
-          <path d="M0 12.402l35.687-4.86.016 34.423-35.67.203zm35.67 33.529l.029 34.508L0 75.523V46.128zM39.697 7.02L88 0v41.745l-48.303.3zm48.303 39.317L88 88l-48.303-7.075-.011-34.52z" fill="#fff"/>
-        </svg>
+      <div 
+        class="start-btn" 
+        @click="emit('toggleStartMenu')"
+        @mouseenter="isStartHovered = true"
+        @mouseleave="isStartHovered = false"
+      >
+        <img src="../../assets/windows/windows.png" width="24" height="24" alt="Windows" />
+        <div v-if="isStartHovered" class="custom-tooltip">Iniciar</div>
       </div>
       <div class="search-container">
         <div class="search-icon">🔍</div>
@@ -115,17 +120,50 @@ onUnmounted(() => {
 
 .start-btn {
     width: 48px;
-    height: 100%;
+    height: 48px;
     display: flex;
     justify-content: center;
     align-items: center;
     cursor: pointer;
-    transition: background 0.1s;
-    border-radius: 4px;
+    position: relative;
 }
 
-.start-btn:hover { background: rgba(255, 255, 255, 0.1); }
+.start-btn::before {
+    content: '';
+    position: absolute;
+    width: 40px;
+    height: 40px;
+    border-radius: 4px;
+    background: transparent;
+    transition: background 0.1s;
+    z-index: 0;
+}
+
+.start-btn:hover::before {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.start-btn svg {
+    position: relative;
+    z-index: 1;
+}
+
 .start-btn:hover svg path { fill: #60cdff; }
+
+.custom-tooltip {
+    position: absolute;
+    bottom: 56px;
+    left: 4px;
+    background: #e1e1e1;
+    color: #333;
+    padding: 3px 8px;
+    font-size: 12px;
+    white-space: nowrap;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    pointer-events: none;
+    z-index: 2000;
+    border: 1px solid #999;
+}
 
 .search-container {
     height: 34px;
@@ -211,4 +249,20 @@ onUnmounted(() => {
 }
 
 .show-desktop:hover { background: rgba(255, 255, 255, 0.1); }
+
+/* Responsiveness */
+@media (max-width: 850px) {
+    .search-container { width: 150px; }
+}
+
+@media (max-width: 700px) {
+    .search-container { display: none; }
+    .cortana { display: none; }
+}
+
+@media (max-width: 500px) {
+    .clock-container .date { display: none; }
+    .tray-icons { gap: 8px; padding: 0 8px; }
+    .taskbar-center { flex: 2; }
+}
 </style>

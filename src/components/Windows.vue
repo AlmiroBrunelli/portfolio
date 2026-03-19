@@ -86,7 +86,7 @@ onMounted(() => {
 .windows-container {
   height: 100vh;
   width: 100vw;
-  background-image: url('../assets/windows-wallpaper.png');
+  background-image: url('../assets/windows/windows-wallpaper.png');
   background-size: cover;
   background-position: center;
   display: flex;

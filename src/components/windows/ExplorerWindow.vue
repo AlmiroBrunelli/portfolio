@@ -4,6 +4,12 @@ import ExplorerTopBar from './ExplorerTopBar.vue'
 import ExplorerSidebar from './ExplorerSidebar.vue'
 import ExplorerMainView from './ExplorerMainView.vue'
 
+const searchQuery = ref('')
+
+const handleSearch = (query) => {
+  searchQuery.value = query
+}
+
 const props = defineProps({
   isOpen: Boolean,
   isMinimized: Boolean
@@ -99,79 +105,48 @@ const windowStyle = computed(() => {
   }
 })
 
+const windowWidth = ref(window.innerWidth)
+
+const handleResize = () => {
+  windowWidth.value = window.innerWidth
+  const desktopWidth = window.innerWidth
+  const desktopHeight = window.innerHeight - 48
+
+  // Keep window size within desktop
+  size.value = {
+    width: Math.min(size.value.width, desktopWidth),
+    height: Math.min(size.value.height, desktopHeight)
+  }
+
+  // Keep window position within desktop
+  pos.value = {
+    x: Math.min(pos.value.x, desktopWidth - size.value.width),
+    y: Math.min(pos.value.y, desktopHeight - size.value.height)
+  }
+
+  // Ensure x and y are not negative
+  pos.value.x = Math.max(0, pos.value.x)
+  pos.value.y = Math.max(0, pos.value.y)
+}
+
+const showSidebar = computed(() => windowWidth.value > 750)
+
 onMounted(() => {
   // Center window
+  const desktopHeight = window.innerHeight - 48
   pos.value = {
-    x: (window.innerWidth - size.value.width) / 2,
-    y: (window.innerHeight - 40 - size.value.height) / 2
+    x: (windowWidth.value - size.value.width) / 2,
+    y: (desktopHeight - size.value.height) / 2
   }
+  window.addEventListener('resize', handleResize)
 })
-
-const isResizing = ref(false)
-const resizeType = ref('')
-const resizeStart = ref({ mouseX: 0, mouseY: 0, winX: 0, winY: 0, winW: 0, winH: 0 })
-
-const startResize = (e, type) => {
-  if (isMaximized.value) return
-  isResizing.value = true
-  resizeType.value = type
-  resizeStart.value = {
-    mouseX: e.clientX,
-    mouseY: e.clientY,
-    winX: pos.value.x,
-    winY: pos.value.y,
-    winW: size.value.width,
-    winH: size.value.height
-  }
-  window.addEventListener('mousemove', onResize)
-  window.addEventListener('mouseup', stopResize)
-}
-
-const onResize = (e) => {
-  if (!isResizing.value) return
-  
-  const dx = e.clientX - resizeStart.value.mouseX
-  const dy = e.clientY - resizeStart.value.mouseY
-  const minW = 400
-  const minH = 300
-
-  let newX = resizeStart.value.winX
-  let newY = resizeStart.value.winY
-  let newW = resizeStart.value.winW
-  let newH = resizeStart.value.winH
-
-  if (resizeType.value.includes('e')) {
-    newW = Math.max(minW, resizeStart.value.winW + dx)
-  }
-  if (resizeType.value.includes('s')) {
-    newH = Math.max(minH, resizeStart.value.winH + dy)
-  }
-  if (resizeType.value.includes('w')) {
-    const maxWidth = resizeStart.value.winX + resizeStart.value.winW - minW
-    newX = Math.min(maxWidth, resizeStart.value.winX + dx)
-    newW = resizeStart.value.winW - (newX - resizeStart.value.winX)
-  }
-  if (resizeType.value.includes('n')) {
-    const maxHeight = resizeStart.value.winY + resizeStart.value.winH - minH
-    newY = Math.min(maxHeight, resizeStart.value.winY + dy)
-    newH = resizeStart.value.winH - (newY - resizeStart.value.winY)
-  }
-
-  pos.value = { x: newX, y: newY }
-  size.value = { width: newW, height: newH }
-}
-
-const stopResize = () => {
-  isResizing.value = false
-  window.removeEventListener('mousemove', onResize)
-  window.removeEventListener('mouseup', stopResize)
-}
 
 onUnmounted(() => {
   window.removeEventListener('mousemove', onDrag)
   window.removeEventListener('mouseup', stopDrag)
   window.removeEventListener('mousemove', onResize)
   window.removeEventListener('mouseup', stopResize)
+  window.removeEventListener('resize', handleResize)
 })
 </script>
 
@@ -181,7 +156,7 @@ onUnmounted(() => {
       v-if="isOpen && !isMinimized"
       class="explorer-window" 
       :style="windowStyle"
-      :class="{ maximized: isMaximized }"
+      :class="{ maximized: isMaximized, 'compact-mode': !showSidebar }"
     >
       <!-- Resize Handles -->
       <template v-if="!isMaximized">
@@ -210,10 +185,12 @@ onUnmounted(() => {
         @forward="goForward"
         @up="goUp"
         @refresh="() => {}"
+        @search="handleSearch"
       />
       
       <div class="window-body">
         <ExplorerSidebar 
+          v-if="showSidebar"
           :currentPath="currentPath"
           @navigate="navigateTo"
         />
@@ -221,6 +198,8 @@ onUnmounted(() => {
           :currentPath="currentPath"
           @navigate="navigateTo"
           @open-file="path => emit('open-file', path)"
+          :compact="!showSidebar"
+          :searchQuery="searchQuery"
         />
       </div>
     </div>

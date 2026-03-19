@@ -7,7 +7,7 @@ const pinnedApps = [
   { name: 'Edge', icon: '🌐' },
   { name: 'Word', icon: '📝' },
   { name: 'Photos', icon: '🖼️' },
-  { name: 'Settings', icon: '⚙️' },
+  { name: 'Settings', icon: 'cog.png' },
   { name: 'Calculator', icon: '🔢' },
   { name: 'Spotify', icon: '🎵' },
   { name: 'VS Code', icon: '💻' },
@@ -42,7 +42,8 @@ const recommendedFiles = [
         </div>
         <div class="apps-grid">
           <div v-for="app in pinnedApps" :key="app.name" class="app-item">
-            <span class="app-icon">{{ app.icon }}</span>
+            <img v-if="app.name === 'Settings'" :src="'/src/assets/windows/' + app.icon" width="32" height="32" :alt="app.name" />
+            <span v-else class="app-icon">{{ app.icon }}</span>
             <span class="app-name">{{ app.name }}</span>
           </div>
         </div>
@@ -64,7 +65,9 @@ const recommendedFiles = [
 
       <div class="user-power-section">
         <div class="user-profile">
-          <div class="avatar">👤</div>
+          <div class="avatar">
+            <img src="../../assets/windows/user.png" width="32" height="32" alt="User" />
+          </div>
           <span class="username">Almiro Brunelli</span>
         </div>
         <div class="power-os-group">
@@ -103,7 +106,9 @@ const recommendedFiles = [
 
 .start-menu {
   width: 640px;
+  max-width: calc(100% - 24px);
   height: 600px;
+  max-height: calc(100vh - 70px);
   background: rgba(28, 28, 28, 0.85);
   backdrop-filter: blur(25px);
   border-radius: 12px;
@@ -118,6 +123,22 @@ const recommendedFiles = [
 @keyframes start-open {
   from { opacity: 0; transform: translateY(20px) scale(0.95); }
   to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* Responsiveness */
+@media (max-width: 680px) {
+    .start-menu-overlay {
+        justify-content: center;
+        padding-left: 0;
+    }
+    .start-menu {
+        width: calc(100% - 16px);
+        max-width: 500px;
+    }
+    .search-section, .content-section, .user-power-section {
+        padding-left: 16px;
+        padding-right: 16px;
+    }
 }
 
 .search-section {
@@ -243,7 +264,6 @@ const recommendedFiles = [
 .avatar {
   width: 32px;
   height: 32px;
-  background: #0078d4;
   border-radius: 50%;
   display: flex;
   justify-content: center;
@@ -282,4 +302,27 @@ const recommendedFiles = [
 }
 
 .power-icon { font-size: 18px; color: #fff; }
+
+/* Responsiveness */
+@media (max-width: 680px) {
+    .start-menu {
+        width: calc(100% - 24px);
+        height: 80vh;
+        max-height: 600px;
+    }
+    .search-section, .content-section, .user-power-section {
+        padding-left: 24px;
+        padding-right: 24px;
+    }
+}
+
+@media (max-width: 500px) {
+    .apps-grid { grid-template-columns: repeat(4, 1fr); }
+    .recommended-list { grid-template-columns: 1fr; }
+    .start-menu { height: 85vh; }
+}
+
+@media (max-width: 400px) {
+    .apps-grid { grid-template-columns: repeat(3, 1fr); }
+}
 </style>

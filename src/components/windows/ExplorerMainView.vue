@@ -2,7 +2,12 @@
 import { computed } from 'vue'
 
 const props = defineProps({
-  currentPath: String
+  currentPath: String,
+  compact: Boolean,
+  searchQuery: {
+    type: String,
+    default: ''
+  }
 })
 
 const emit = defineEmits(['navigate', 'open-file'])
@@ -16,16 +21,24 @@ const rootItems = [
 ]
 
 const imageItems = [
-  { label: 'windows-wallpaper.png', icon: '🖼️', type: 'image', path: '/src/assets/windows-wallpaper.png' },
+  { label: 'windows-wallpaper.png', icon: '🖼️', type: 'image', path: '/src/assets/windows/windows-wallpaper.png' },
   { label: 'hero.png', icon: '🖼️', type: 'image', path: '/src/assets/hero.png' },
   { label: 'background_1.jpg', icon: '🖼️', type: 'image', path: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b' },
   { label: 'background_2.jpg', icon: '🖼️', type: 'image', path: 'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05' }
 ]
 
 const displayItems = computed(() => {
-  if (props.currentPath === 'Imagens') return imageItems
-  if (props.currentPath === 'Este Computador') return rootItems
-  return [] // Empty for other folders for now
+  let items = []
+  if (props.currentPath === 'Imagens') items = imageItems
+  else if (props.currentPath === 'Este Computador') items = rootItems
+  else return [] // Empty for other folders for now
+
+  if (props.searchQuery) {
+    const query = props.searchQuery.toLowerCase()
+    return items.filter(item => item.label.toLowerCase().includes(query))
+  }
+
+  return items
 })
 
 const handleItemClick = (item) => {
@@ -39,7 +52,7 @@ const handleItemClick = (item) => {
 </script>
 
 <template>
-  <div class="main-view">
+  <div class="main-view" :class="{ compact: compact }">
     <div class="content-header">
       <h2 class="section-title">{{ currentPath }}</h2>
     </div>
@@ -66,10 +79,19 @@ const handleItemClick = (item) => {
   background: #fff;
   padding: 24px;
   overflow-y: auto;
+  transition: padding 0.3s;
+}
+
+.main-view.compact {
+  padding: 12px;
 }
 
 .content-header {
   margin-bottom: 20px;
+}
+
+.main-view.compact .content-header {
+  margin-bottom: 12px;
 }
 
 .section-title {
@@ -84,6 +106,11 @@ const handleItemClick = (item) => {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
   gap: 24px;
+}
+
+.main-view.compact .grid {
+  gap: 12px;
+  grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
 }
 
 .grid-item {

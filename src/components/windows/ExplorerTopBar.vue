@@ -16,13 +16,26 @@ const emit = defineEmits([
   'back',
   'forward',
   'up',
-  'refresh'
+  'refresh',
+  'search'
 ])
+
+import { ref, watch } from 'vue'
+
+const searchQuery = ref('')
+
+watch(searchQuery, (newVal) => {
+  emit('search', newVal)
+})
+
+const clearSearch = () => {
+  searchQuery.value = ''
+}
 </script>
 
 <template>
   <div class="explorer-header">
-    <div class="title-bar" @mousedown="$emit('dragstart', $event)">
+    <div class="title-bar" @mousedown="$emit('dragstart', $event)" @dblclick="$emit('maximize')">
       <div class="tabs-container">
         <div class="tab active">
           <span class="icon">🏠</span>
@@ -32,7 +45,9 @@ const emit = defineEmits([
         <div class="add-tab">+</div>
       </div>
       <div class="window-controls">
-        <div class="control-btn" @click.stop="$emit('minimize')">－</div>
+        <div class="control-btn" @click.stop="$emit('minimize')">
+          <img src="../../assets/windows/minimize.png" width="12" height="12" alt="Minimizar" />
+        </div>
         <div class="control-btn" @click.stop="$emit('maximize')">
           {{ isMaximized ? '❐' : '□' }}
         </div>
@@ -79,8 +94,11 @@ const emit = defineEmits([
       </div>
       
       <div class="search-box">
-        <span class="search-icon">🔍</span>
-        <input type="text" :placeholder="'Pesquisar em ' + currentPath" />
+        <input type="text" v-model="searchQuery" :placeholder="'Pesquisar em ' + currentPath" />
+        <span v-if="searchQuery" class="clear-icon" @click="clearSearch" title="Limpar pesquisa">✕</span>
+        <span class="search-icon">
+          <img src="../../assets/windows/search.png" width="14" height="14" alt="Pesquisar" />
+        </span>
       </div>
     </div>
   </div>
@@ -252,6 +270,28 @@ const emit = defineEmits([
   align-items: center;
   padding: 0 10px;
   gap: 10px;
+  position: relative;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.search-box:hover {
+  background: #fdfdfd;
+  border-color: #ccc;
+}
+
+.search-box::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: transparent;
+  transition: background 0.2s;
+}
+
+.search-box:focus-within::after {
+  background: #0078d4;
 }
 
 .search-box input {
@@ -263,5 +303,41 @@ const emit = defineEmits([
   color: #333;
 }
 
-.search-icon { color: #888; font-size: 14px; }
+.clear-icon {
+  cursor: pointer;
+  font-size: 12px;
+  color: #888;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px;
+}
+
+.clear-icon:hover {
+  color: #333;
+}
+
+.search-icon { 
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #888; 
+  font-size: 14px; 
+}
+
+/* Responsiveness */
+@media (max-width: 800px) {
+    .search-box { width: 150px; }
+}
+
+@media (max-width: 650px) {
+    .search-box { display: none; }
+    .tab { min-width: 120px; }
+}
+
+@media (max-width: 500px) {
+    .address-box { display: none; }
+    .nav-buttons { gap: 2px; }
+    .nav-buttons .nav-btn { width: 28px; height: 28px; font-size: 14px; }
+}
 </style>
