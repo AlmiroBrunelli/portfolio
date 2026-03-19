@@ -41,10 +41,8 @@ const getComponent = () => {
   }
 }
 
-const showSwitcher = ref(false)
 const selectOS = (os) => {
   loading.value = true
-  showSwitcher.value = false
   setTimeout(() => {
     currentOS.value = os
     loading.value = false
@@ -54,20 +52,6 @@ const selectOS = (os) => {
 
 <template>
   <div class="home-wrapper">
-    <!-- OS Switcher Button -->
-    <div class="os-switcher-trigger" @click="showSwitcher = !showSwitcher" title="Change OS View">
-        <span>🖥️</span>
-    </div>
-
-    <!-- Switcher Menu -->
-    <Transition name="slide-fade">
-      <div v-if="showSwitcher" class="os-menu">
-        <label>Select OS Experience</label>
-        <button @click="selectOS('Windows')" :class="{ active: currentOS === 'Windows' }">🪟 Windows</button>
-        <button @click="selectOS('Mac')" :class="{ active: currentOS === 'Mac' }">🍎 macOS</button>
-        <button @click="selectOS('Linux')" :class="{ active: currentOS === 'Linux' }">🐧 Linux</button>
-      </div>
-    </Transition>
 
     <Transition name="fade" mode="out-in">
       <div v-if="loading" class="loader-container">
@@ -91,75 +75,6 @@ const selectOS = (os) => {
   position: relative;
 }
 
-.os-switcher-trigger {
-    position: absolute;
-    top: 20px;
-    right: 20px;
-    z-index: 1000;
-    width: 44px;
-    height: 44px;
-    background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(10px);
-    border-radius: 50%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    cursor: pointer;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    transition: all 0.3s;
-    font-size: 20px;
-}
-
-.os-switcher-trigger:hover {
-    background: rgba(255, 255, 255, 0.2);
-    transform: scale(1.1);
-}
-
-.os-menu {
-    position: absolute;
-    top: 75px;
-    right: 20px;
-    z-index: 1000;
-    background: rgba(20, 20, 20, 0.85);
-    backdrop-filter: blur(20px);
-    border-radius: 12px;
-    padding: 15px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    width: 180px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-}
-
-.os-menu label {
-    font-size: 11px;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    opacity: 0.6;
-    margin-bottom: 5px;
-}
-
-.os-menu button {
-    background: transparent;
-    border: none;
-    color: white;
-    padding: 10px;
-    text-align: left;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: background 0.2s;
-    font-size: 14px;
-}
-
-.os-menu button:hover {
-    background: rgba(255, 255, 255, 0.1);
-}
-
-.os-menu button.active {
-    background: #0078d4;
-    font-weight: bold;
-}
 
 .loader-container {
   display: flex;
@@ -193,17 +108,4 @@ const selectOS = (os) => {
   opacity: 0;
 }
 
-.slide-fade-enter-active {
-  transition: all 0.3s ease-out;
-}
-
-.slide-fade-leave-active {
-  transition: all 0.3s cubic-bezier(1, 0.5, 0.8, 1);
-}
-
-.slide-fade-enter-from,
-.slide-fade-leave-to {
-  transform: translateY(-20px);
-  opacity: 0;
-}
 </style>

@@ -70,14 +70,10 @@ const recommendedFiles = [
         <div class="power-os-group">
           <!-- OS Switchers -->
           <button class="os-btn mac" @click="emit('change-os', 'Mac')" title="Ir para macOS">
-            <svg viewBox="0 0 512 512" width="18" height="18">
-                <path d="M407.4 341.4c-22.1 43.4-44.1 86.8-90.2 87.2-46.1.4-60.9-27.8-113.8-27.8-52.9 0-69.1 27.2-113.8 28.3-44.7 1.1-70.5-47.5-92.6-90.9-45.2-88.6-79.8-251.4 46.1-251.4 62.7 0 106.9 38.6 145.2 38.6 38.3 0 91.3-47.5 167.3-39.2 31.8 3.5 120.9 14.8 178.4 99.1-4.7 2.9-106.9 62.2-106.9 184.1 0 102.3 88.6 137.9 100.4 142.9zm-94.4-275.6c0 0 55.6-66.9 51-135 0 0-71.8 16.2-114.7 66.8-31 36.6-43.1 76-35.4 116.8 0 0 81.3 6.9 99.1-48.6z" fill="white"/>
-            </svg>
+            <img src="../../assets/mac-logo.png" width="20" height="20" alt="macOS" style="filter: invert(1);" />
           </button>
           <button class="os-btn linux" @click="emit('change-os', 'Linux')" title="Ir para Linux">
-            <svg viewBox="0 0 512 512" width="18" height="18">
-                <path d="M444.6 391.5a140.2 140.2 0 0 0-41-39.3c.7-6.2 1-12.6 1-19.1 0-74.8-59.5-135.4-133-135.4-73.4 0-133 60.6-133 135.4a159.2 159.2 0 0 0 16 70c-26.6 6.8-50.6 20.3-69.7 39a117 117 0 0 0-32.9 83.2c0 4.1 3.5 7.5 7.6 7.5h33.8c130 .8 260 .8 390 0h33.8c4 0 7.4-3.4 7.4-7.5 0-46-15.6-90.3-43.5-121.2zM217 312c0-12.7 9.8-23 22-23s22 10.3 22 23-9.8 23-22 23c-12.2.1-22-10.2-22-23zm131.7 131H163.3c.8-11.8 3.3-22.3 7-31.4h171.4c3.7 9.1 6.2 19.6 7 31.4zm-22-96c-12.2 0-22-10.3-22-23s9.8-23 22-23 22 10.3 22 23-9.8 23-22 23z" fill="white"/>
-            </svg>
+            <img src="../../assets/linux-logo.png" width="20" height="20" alt="Linux" style="filter: invert(1);" />
           </button>
           <div class="separator-v"></div>
           <button class="power-btn" title="Desligar">
@@ -98,9 +94,11 @@ const recommendedFiles = [
   height: 100%;
   z-index: 999;
   display: flex;
-  justify-content: center;
+  justify-content: flex-start;
   align-items: flex-end;
-  padding-bottom: 2px;
+  padding-left: 12px;
+  padding-bottom: 10px;
+  box-sizing: border-box;
 }
 
 .start-menu {
