@@ -1,5 +1,6 @@
 <script setup>
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
+import { i18n } from '../../i18n'
 import ResizableWindow from './ResizableWindow.vue'
 import ExplorerTopBar from './ExplorerTopBar.vue'
 import ExplorerSidebar from './ExplorerSidebar.vue'
@@ -117,7 +118,7 @@ onUnmounted(() => {
   <Transition name="window">
     <ResizableWindow 
       v-if="isOpen && !isMinimized"
-      title="Explorador de Arquivos"
+      :title="i18n.t('taskbar.explorer')"
       icon="📁"
       :darkMode="false"
       :showTitle="false"
@@ -141,10 +142,10 @@ onUnmounted(() => {
             <span class="icon">
               {{ tab.path === 'Imagens' ? '🖼️' : tab.path === 'Documentos' ? '📄' : tab.path === 'OneDrive' ? '☁️' : '🏠' }}
             </span>
-            <span class="label">{{ tab.path }}</span>
+            <span class="label">{{ tab.path === 'Este Computador' ? i18n.t('explorer.this_pc') : tab.path === 'Documentos' ? i18n.t('explorer.documents') : tab.path === 'Imagens' ? i18n.t('explorer.pictures') : tab.path === 'OneDrive' ? i18n.t('explorer.onedrive') : tab.path }}</span>
             <span class="close-tab" @click="closeTab(tab.id, $event)">✕</span>
           </div>
-          <div class="add-tab" @click="addTab" title="Nova aba">+</div>
+          <div class="add-tab" @click="addTab" :title="i18n.t('explorer.new_tab')">+</div>
         </div>
       </template>
 

@@ -1,5 +1,6 @@
 <script setup>
 import { computed } from 'vue'
+import { i18n } from '../../i18n'
 
 const props = defineProps({
   currentPath: String,
@@ -13,11 +14,11 @@ const props = defineProps({
 const emit = defineEmits(['navigate', 'open-file'])
 
 const rootItems = [
-  { label: 'Projetos', icon: '🚀' },
-  { label: 'Currículo', icon: '📄' },
-  { label: 'Links', icon: '🌐' },
-  { label: 'Certificados', icon: '🏆' },
-  { label: 'Blog', icon: '📝' }
+  { label: 'explorer.projects', icon: '🚀', internalName: 'Projetos' },
+  { label: 'explorer.resume', icon: '📄', internalName: 'Currículo' },
+  { label: 'explorer.links', icon: '🌐', internalName: 'Links' },
+  { label: 'explorer.certificates', icon: '🏆', internalName: 'Certificados' },
+  { label: 'explorer.blog', icon: '📝', internalName: 'Blog' }
 ]
 
 const imageItems = [
@@ -46,7 +47,7 @@ const handleItemClick = (item) => {
         const index = imageItems.findIndex(i => i.path === item.path)
         emit('open-file', { path: item.path, list: imageItems, index })
     } else {
-        emit('navigate', item.label)
+        emit('navigate', item.internalName)
     }
 }
 </script>
@@ -54,7 +55,7 @@ const handleItemClick = (item) => {
 <template>
   <div class="main-view" :class="{ compact: compact }">
     <div class="content-header">
-      <h2 class="section-title">{{ currentPath }}</h2>
+      <h2 class="section-title">{{ currentPath === 'Este Computador' ? i18n.t('explorer.this_pc') : currentPath === 'Documentos' ? i18n.t('explorer.documents') : currentPath === 'Imagens' ? i18n.t('explorer.pictures') : currentPath === 'OneDrive' ? i18n.t('explorer.onedrive') : currentPath }}</h2>
     </div>
     <div class="grid" :class="{ 'image-grid': currentPath === 'Imagens' }">
       <div 
@@ -67,7 +68,7 @@ const handleItemClick = (item) => {
           <img v-if="item.type === 'image'" :src="item.path" class="thumbnail" />
           <span v-else class="icon">{{ item.icon }}</span>
         </div>
-        <span class="label">{{ item.label }}</span>
+        <span class="label">{{ item.type === 'image' ? item.label : i18n.t(item.label) }}</span>
       </div>
     </div>
   </div>

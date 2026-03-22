@@ -1,5 +1,6 @@
 <script setup>
 import { ref } from 'vue'
+import { i18n } from '../../i18n'
 
 const emit = defineEmits(['change-os', 'close', 'open-app'])
 
@@ -31,14 +32,14 @@ const recommendedFiles = [
       <div class="search-section">
         <div class="search-bar">
           <span class="search-icon">🔍</span>
-          <input type="text" placeholder="Pesquisar aplicativos, arquivos e configurações" />
+          <input type="text" :placeholder="i18n.t('start.search')" />
         </div>
       </div>
 
       <div class="content-section">
         <div class="section-header">
-          <span class="section-title">Fixado</span>
-          <button class="all-apps">Todos os aplicativos ></button>
+          <span class="section-title">{{ i18n.t('start.pinned') }}</span>
+          <button class="all-apps">{{ i18n.t('start.all_apps') }} ></button>
         </div>
         <div class="apps-grid">
           <div v-for="app in pinnedApps" :key="app.name" class="app-item" @click="emit('open-app', app.name)">
@@ -49,8 +50,8 @@ const recommendedFiles = [
         </div>
 
         <div class="section-header recommended">
-          <span class="section-title">Recomendado</span>
-          <button class="all-apps">Mais ></button>
+          <span class="section-title">{{ i18n.t('start.recommended') }}</span>
+          <button class="all-apps">{{ i18n.t('start.more') }} ></button>
         </div>
         <div class="recommended-list">
           <div v-for="file in recommendedFiles" :key="file.name" class="recommended-item">
@@ -68,10 +69,10 @@ const recommendedFiles = [
           <div class="avatar">
             <img src="../../assets/windows/user.png" width="32" height="32" alt="User" />
           </div>
-          <span class="username">Almiro Brunelli</span>
+          <span class="username">{{ i18n.t('welcome.username') }}</span>
         </div>
         <div class="power-os-group">
-          <button class="power-btn" title="Desligar">
+          <button class="power-btn" :title="i18n.t('start.power')">
             <span class="power-icon">⏻</span>
           </button>
         </div>

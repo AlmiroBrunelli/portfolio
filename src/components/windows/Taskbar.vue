@@ -1,5 +1,7 @@
 <script setup>
-import { ref, onMounted, onUnmounted, computed } from 'vue'
+import { ref, onMounted, onUnmounted, computed, watch } from 'vue'
+import { i18n } from '../../i18n'
+import LanguageSelector from '../common/LanguageSelector.vue'
 
 const props = defineProps({
   isExplorerOpen: Boolean,
@@ -50,9 +52,25 @@ const explorerIcon = computed(() => {
 
 const updateTime = () => {
   const now = new Date()
-  currentTime.value = now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
-  currentDate.value = now.toLocaleDateString('pt-BR')
+  const locale = i18n.state.locale
+  
+  if (locale === 'en-US') {
+    // MM/DD/YYYY and XX:XX AM/PM
+    currentTime.value = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })
+    const month = String(now.getMonth() + 1).padStart(2, '0')
+    const day = String(now.getDate()).padStart(2, '0')
+    currentDate.value = `${month}/${day}/${now.getFullYear()}`
+  } else {
+    // DD/MM/YYYY and XX:XX
+    currentTime.value = now.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit', hour12: false })
+    const day = String(now.getDate()).padStart(2, '0')
+    const month = String(now.getMonth() + 1).padStart(2, '0')
+    currentDate.value = `${day}/${month}/${now.getFullYear()}`
+  }
 }
+
+// Update time when locale changes
+watch(() => i18n.state.locale, updateTime)
 
 let timer
 onMounted(() => {
@@ -71,12 +89,12 @@ onUnmounted(() => {
       <div 
         class="task-btn start-btn" 
         @click="emit('toggleStartMenu')"
-        @mouseenter="handleMouseEnter('Iniciar')"
+        @mouseenter="handleMouseEnter('taskbar.start')"
         @mouseleave="handleMouseLeave"
       >
         <img src="../../assets/windows/windows.png" width="24" height="24" alt="Start" />
         <Transition name="fade">
-          <div v-if="activeTooltip === 'Iniciar'" class="custom-tooltip">Iniciar</div>
+          <div v-if="activeTooltip === 'taskbar.start'" class="custom-tooltip">{{ i18n.t('taskbar.start') }}</div>
         </Transition>
       </div>
 
@@ -86,13 +104,13 @@ onUnmounted(() => {
         class="task-btn" 
         :class="{ active: focusedApp === 'Explorer' && !isExplorerMinimized, 'has-window': isExplorerOpen }"
         @click="emit('toggleExplorer')"
-        @mouseenter="handleMouseEnter(explorerPath)"
+        @mouseenter="handleMouseEnter('taskbar.explorer')"
         @mouseleave="handleMouseLeave"
       >
          <span class="icon">{{ explorerIcon }}</span>
          <div v-if="isExplorerOpen" class="active-indicator" :class="{ minimized: isExplorerMinimized || focusedApp !== 'Explorer' }"></div>
          <Transition name="fade">
-           <div v-if="activeTooltip === explorerPath" class="custom-tooltip">{{ explorerPath }}</div>
+           <div v-if="activeTooltip === 'taskbar.explorer'" class="custom-tooltip">{{ i18n.t('taskbar.explorer') }}</div>
          </Transition>
       </div>
       
@@ -101,13 +119,13 @@ onUnmounted(() => {
         class="task-btn" 
         :class="{ active: focusedApp === 'Calculator' && !isCalculatorMinimized, 'has-window': true }"
         @click="emit('toggleCalculator')"
-        @mouseenter="handleMouseEnter('Calculadora')"
+        @mouseenter="handleMouseEnter('taskbar.calculator')"
         @mouseleave="handleMouseLeave"
       >
          <img src="../../assets/windows/calculator.png" width="24" height="24" alt="Calculadora" />
          <div class="active-indicator" :class="{ minimized: isCalculatorMinimized || focusedApp !== 'Calculator' }"></div>
          <Transition name="fade">
-           <div v-if="activeTooltip === 'Calculadora'" class="custom-tooltip">Calculadora</div>
+           <div v-if="activeTooltip === 'taskbar.calculator'" class="custom-tooltip">{{ i18n.t('taskbar.calculator') }}</div>
          </Transition>
       </div>
 
@@ -116,13 +134,13 @@ onUnmounted(() => {
         class="task-btn" 
         :class="{ active: focusedApp === 'PhotoViewer' && !isPhotoViewerMinimized, 'has-window': true }"
         @click="emit('togglePhotoViewer')"
-        @mouseenter="handleMouseEnter('Fotos')"
+        @mouseenter="handleMouseEnter('taskbar.photos')"
         @mouseleave="handleMouseLeave"
       >
          <span class="icon">🖼️</span>
          <div class="active-indicator" :class="{ minimized: isPhotoViewerMinimized || focusedApp !== 'PhotoViewer' }"></div>
          <Transition name="fade">
-           <div v-if="activeTooltip === 'Fotos'" class="custom-tooltip">Fotos</div>
+           <div v-if="activeTooltip === 'taskbar.photos'" class="custom-tooltip">{{ i18n.t('taskbar.photos') }}</div>
          </Transition>
       </div>
 
@@ -130,23 +148,26 @@ onUnmounted(() => {
         class="task-btn" 
         :class="{ active: focusedApp === 'Edge' && !isEdgeMinimized, 'has-window': isEdgeOpen }"
         @click="emit('toggleEdge')"
-        @mouseenter="handleMouseEnter('Microsoft Edge')"
+        @mouseenter="handleMouseEnter('taskbar.edge')"
         @mouseleave="handleMouseLeave"
       >
          <img src="../../assets/windows/ms-edge.png" width="24" height="24" alt="Edge" />
          <div v-if="isEdgeOpen" class="active-indicator" :class="{ minimized: isEdgeMinimized || focusedApp !== 'Edge' }"></div>
          <Transition name="fade">
-           <div v-if="activeTooltip === 'Microsoft Edge'" class="custom-tooltip">Microsoft Edge</div>
+           <div v-if="activeTooltip === 'taskbar.edge'" class="custom-tooltip">{{ i18n.t('taskbar.edge') }}</div>
          </Transition>
       </div>
     </div>
 
     <div class="taskbar-right">
       <div class="tray-icons">
-         <span class="tray-icon" @mouseenter="handleMouseEnter('Bateria')" @mouseleave="handleMouseLeave">🔋</span>
-         <span class="tray-icon" @mouseenter="handleMouseEnter('Rede')" @mouseleave="handleMouseLeave">🌐</span>
-         <span class="tray-icon" @mouseenter="handleMouseEnter('Som')" @mouseleave="handleMouseLeave">🔊</span>
+         <span class="tray-icon" @mouseenter="handleMouseEnter('taskbar.battery')" @mouseleave="handleMouseLeave">🔋</span>
+         <span class="tray-icon" @mouseenter="handleMouseEnter('taskbar.network')" @mouseleave="handleMouseLeave">🌐</span>
+         <span class="tray-icon" @mouseenter="handleMouseEnter('taskbar.sound')" @mouseleave="handleMouseLeave">🔊</span>
       </div>
+
+      <LanguageSelector />
+
       <div class="clock-container" @mouseenter="handleMouseEnter(currentDate)" @mouseleave="handleMouseLeave">
          <div class="time">{{ currentTime }}</div>
          <div class="date">{{ currentDate }}</div>
@@ -154,9 +175,9 @@ onUnmounted(() => {
            <div v-if="activeTooltip === currentDate" class="custom-tooltip">{{ currentDate }}</div>
          </Transition>
       </div>
-      <div class="show-desktop" @click="emit('minimizeExplorer')" @mouseenter="handleMouseEnter('Mostrar área de trabalho')" @mouseleave="handleMouseLeave">
+      <div class="show-desktop" @click="emit('minimizeExplorer')" @mouseenter="handleMouseEnter('taskbar.show_desktop')" @mouseleave="handleMouseLeave">
           <Transition name="fade">
-            <div v-if="activeTooltip === 'Mostrar área de trabalho'" class="custom-tooltip" style="right: 0; left: auto;">Mostrar área de trabalho</div>
+            <div v-if="activeTooltip === 'taskbar.show_desktop'" class="custom-tooltip" style="right: 0; left: auto;">{{ i18n.t('taskbar.show_desktop') }}</div>
           </Transition>
       </div>
     </div>
@@ -307,20 +328,21 @@ onUnmounted(() => {
 }
 
 .clock-container {
-    padding: 0 8px;
-    text-align: center;
+    padding: 12px 8px 0px 8px; /* 12px top, 0px bottom, 8px left/right */
+    text-align: right;
     cursor: pointer;
     display: flex;
     flex-direction: column;
-    justify-content: center;
+    gap: 6px;
+    align-items: flex-end;
     height: 40px;
     border-radius: 4px;
 }
 
 .clock-container:hover { background: rgba(255, 255, 255, 0.1); }
 
-.time { font-size: 11px; font-weight: 500; }
-.date { font-size: 11px; opacity: 0.8; }
+.time { font-size: 11px; font-weight: 400; line-height: 1; }
+.date { font-size: 11px; font-weight: 400; line-height: 1; }
 
 .show-desktop {
     width: 4px;

@@ -1,5 +1,6 @@
 <script setup>
 import { ref, onMounted } from 'vue'
+import { i18n } from '../i18n'
 import LoadingSpinner from './common/LoadingSpinner.vue'
 
 const emit = defineEmits(['logged-in'])
@@ -30,12 +31,12 @@ onMounted(() => {
             <circle cx="12" cy="7" r="4"></circle>
           </svg>
         </div>
-        <h1 class="username">Almiro Brunelli</h1>
+        <h1 class="username">{{ i18n.t('welcome.username') }}</h1>
       </div>
 
       <div class="status-section">
         <LoadingSpinner />
-        <span class="status-text">{{ loading ? 'Iniciando...' : 'Bem-vindo' }}</span>
+        <span class="status-text">{{ loading ? i18n.t('welcome.loading') : i18n.t('welcome.title') }}</span>
       </div>
     </div>
 
@@ -122,8 +123,9 @@ onMounted(() => {
 }
 
 .status-section {
-  height: 40px;
+  min-height: 80px;
   display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
   gap: 12px;

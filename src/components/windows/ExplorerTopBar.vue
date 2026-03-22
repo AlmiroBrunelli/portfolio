@@ -1,4 +1,5 @@
 <script setup>
+import { i18n } from '../../i18n'
 defineProps({
   isMaximized: Boolean,
   currentPath: String,
@@ -40,7 +41,7 @@ const clearSearch = () => {
         <button 
           class="nav-btn" 
           :class="{ disabled: !canGoBack }" 
-          title="Voltar"
+          :title="i18n.t('explorer.back')"
           @click="canGoBack && emit('back')"
         >
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -50,7 +51,7 @@ const clearSearch = () => {
         <button 
           class="nav-btn" 
           :class="{ disabled: !canGoForward }" 
-          title="Avançar"
+          :title="i18n.t('explorer.forward')"
           @click="canGoForward && emit('forward')"
         >
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -60,7 +61,7 @@ const clearSearch = () => {
         <button 
           class="nav-btn" 
           :class="{ disabled: !canGoUp }" 
-          title="Subir"
+          :title="i18n.t('explorer.up')"
           @click="canGoUp && emit('up')"
         >
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -69,7 +70,7 @@ const clearSearch = () => {
         </button>
         <button 
           class="nav-btn" 
-          title="Atualizar"
+          :title="i18n.t('explorer.refresh')"
           @click="emit('refresh')"
         >↻</button>
       </div>
@@ -77,19 +78,19 @@ const clearSearch = () => {
       <div class="address-box">
         <div class="address-icon">{{ currentPath === 'Imagens' ? '🖼️' : '🏠' }}</div>
         <div class="breadcrumbs">
-          <span class="crumb" @click="emit('navigate', 'Este Computador')">Este Computador</span>
+          <span class="crumb" @click="emit('navigate', 'Este Computador')">{{ i18n.t('explorer.this_pc') }}</span>
           <template v-if="currentPath !== 'Este Computador'">
             <span class="separator">></span>
-            <span class="crumb" @click="emit('navigate', currentPath)">{{ currentPath }}</span>
+            <span class="crumb" @click="emit('navigate', currentPath)">{{ currentPath === 'Documentos' ? i18n.t('explorer.documents') : currentPath === 'Imagens' ? i18n.t('explorer.pictures') : currentPath === 'OneDrive' ? i18n.t('explorer.onedrive') : currentPath }}</span>
           </template>
         </div>
       </div>
       
       <div class="search-box">
-        <input type="text" v-model="searchQuery" :placeholder="'Pesquisar em ' + currentPath" />
-        <span v-if="searchQuery" class="clear-icon" @click="clearSearch" title="Limpar pesquisa">✕</span>
+        <input type="text" v-model="searchQuery" :placeholder="i18n.t('explorer.search_in') + (currentPath === 'Este Computador' ? i18n.t('explorer.this_pc') : currentPath === 'Documentos' ? i18n.t('explorer.documents') : currentPath === 'Imagens' ? i18n.t('explorer.pictures') : currentPath)" />
+        <span v-if="searchQuery" class="clear-icon" @click="clearSearch" :title="i18n.t('explorer.clear_search')">✕</span>
         <span class="search-icon">
-          <img src="../../assets/windows/search.png" width="14" height="14" alt="Pesquisar" />
+          <img src="../../assets/windows/search.png" width="14" height="14" :alt="i18n.t('explorer.search_in')" />
         </span>
       </div>
     </div>

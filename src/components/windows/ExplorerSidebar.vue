@@ -1,4 +1,5 @@
 <script setup>
+import { i18n } from '../../i18n'
 defineProps({
   currentPath: String
 })
@@ -6,10 +7,10 @@ defineProps({
 const emit = defineEmits(['navigate'])
 
 const navItems = [
-  { label: 'Acesso rápido', icon: '⭐' },
-  { label: 'OneDrive', icon: '☁️' },
-  { label: 'Este Computador', icon: '🖥️' },
-  { label: 'Rede', icon: '🌐' }
+  { label: 'explorer.quick_access', icon: '⭐', internalName: 'Acesso rápido' },
+  { label: 'explorer.onedrive', icon: '☁️', internalName: 'OneDrive' },
+  { label: 'explorer.this_pc', icon: '🖥️', internalName: 'Este Computador' },
+  { label: 'explorer.network', icon: '🌐', internalName: 'Rede' }
 ]
 </script>
 
@@ -19,11 +20,11 @@ const navItems = [
       v-for="item in navItems" 
       :key="item.label" 
       class="nav-item" 
-      :class="{ active: currentPath === item.label }"
-      @click="emit('navigate', item.label)"
+      :class="{ active: currentPath === item.internalName }"
+      @click="emit('navigate', item.internalName)"
     >
       <span class="icon">{{ item.icon }}</span>
-      <span class="label">{{ item.label }}</span>
+      <span class="label">{{ i18n.t(item.label) }}</span>
     </div>
     
     <div class="separator"></div>
@@ -35,7 +36,7 @@ const navItems = [
         @click="emit('navigate', 'Documentos')"
       >
         <span class="icon">📁</span>
-        <span class="label">Documentos</span>
+        <span class="label">{{ i18n.t('explorer.documents') }}</span>
       </div>
       <div 
         class="nav-item" 
@@ -43,7 +44,7 @@ const navItems = [
         @click="emit('navigate', 'Imagens')"
       >
         <span class="icon">🖼️</span>
-        <span class="label">Imagens</span>
+        <span class="label">{{ i18n.t('explorer.pictures') }}</span>
       </div>
     </div>
   </div>
