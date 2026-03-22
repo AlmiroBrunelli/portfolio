@@ -47,7 +47,13 @@ export default {
   languages: {
     pt: 'Português (Brasil)',
     en: 'English (United States)',
-    es: 'Español (España)',
+    es: 'Espanhol (España)',
     title: 'Idioma'
+  },
+  quick_settings: {
+    volume: 'Volume',
+    brightness: 'Brilho',
+    battery: 'Bateria',
+    settings: 'Configurações'
   }
 }

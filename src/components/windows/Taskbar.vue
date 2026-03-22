@@ -2,6 +2,9 @@
 import { ref, onMounted, onUnmounted, computed, watch } from 'vue'
 import { i18n } from '../../i18n'
 import LanguageSelector from '../common/LanguageSelector.vue'
+import QuickSettings from '../common/QuickSettings.vue'
+import SoundIcon from '../common/SoundIcon.vue'
+import { windowsState } from '../../store'
 
 const props = defineProps({
   isExplorerOpen: Boolean,
@@ -23,6 +26,7 @@ const emit = defineEmits(['toggleExplorer', 'minimizeExplorer', 'toggleStartMenu
 
 const currentTime = ref('')
 const currentDate = ref('')
+const isQuickSettingsOpen = ref(false)
 const activeTooltip = ref('')
 let tooltipTimeout = null
 
@@ -160,10 +164,16 @@ onUnmounted(() => {
     </div>
 
     <div class="taskbar-right">
-      <div class="tray-icons">
-         <span class="tray-icon" @mouseenter="handleMouseEnter('taskbar.battery')" @mouseleave="handleMouseLeave">🔋</span>
-         <span class="tray-icon" @mouseenter="handleMouseEnter('taskbar.network')" @mouseleave="handleMouseLeave">🌐</span>
-         <span class="tray-icon" @mouseenter="handleMouseEnter('taskbar.sound')" @mouseleave="handleMouseLeave">🔊</span>
+      <div 
+        class="tray-icons-group" 
+        @click="isQuickSettingsOpen = !isQuickSettingsOpen"
+        :class="{ active: isQuickSettingsOpen }"
+      >
+        <div class="tray-icons">
+           <span class="tray-icon" @mouseenter="handleMouseEnter('taskbar.battery')" @mouseleave="handleMouseLeave">🔋</span>
+           <span class="tray-icon" @mouseenter="handleMouseEnter('taskbar.network')" @mouseleave="handleMouseLeave">🌐</span>
+           <SoundIcon :volume="windowsState.volume" :is-muted="windowsState.isMuted" :size="16" class="tray-icon-img" />
+        </div>
       </div>
 
       <LanguageSelector />
@@ -181,6 +191,11 @@ onUnmounted(() => {
           </Transition>
       </div>
     </div>
+
+    <QuickSettings 
+      :is-open="isQuickSettingsOpen" 
+      @close="isQuickSettingsOpen = false" 
+    />
   </div>
 </template>
 
@@ -320,11 +335,30 @@ onUnmounted(() => {
 
 .taskbar-right { gap: 2px; }
 
+.tray-icons-group {
+    display: flex;
+    align-items: center;
+    height: 40px;
+    padding: 0 4px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.tray-icons-group:hover, .tray-icons-group.active {
+    background: rgba(255, 255, 255, 0.1);
+}
+
 .tray-icons {
     display: flex;
-    gap: 12px;
+    gap: 8px; /* Tighter gap in group */
     font-size: 14px;
-    padding: 0 12px;
+    padding: 0 8px;
+    align-items: center;
+}
+
+.tray-icon-img {
+    opacity: 0.9;
 }
 
 .clock-container {

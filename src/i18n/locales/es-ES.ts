@@ -49,5 +49,11 @@ export default {
     en: 'Inglés (Estados Unidos)',
     es: 'Español (España)',
     title: 'Idioma'
+  },
+  quick_settings: {
+    volume: 'Volumen',
+    brightness: 'Brillo',
+    battery: 'Batería',
+    settings: 'Configuración'
   }
 }
