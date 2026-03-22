@@ -71,14 +71,6 @@ const recommendedFiles = [
           <span class="username">Almiro Brunelli</span>
         </div>
         <div class="power-os-group">
-          <!-- OS Switchers -->
-          <button class="os-btn mac" @click="emit('change-os', 'Mac')" title="Ir para macOS">
-            <img src="../../assets/mac-logo.png" width="20" height="20" alt="macOS" style="filter: invert(1);" />
-          </button>
-          <button class="os-btn linux" @click="emit('change-os', 'Linux')" title="Ir para Linux">
-            <img src="../../assets/linux-logo.png" width="20" height="20" alt="Linux" style="filter: invert(1);" />
-          </button>
-          <div class="separator-v"></div>
           <button class="power-btn" title="Desligar">
             <span class="power-icon">⏻</span>
           </button>
