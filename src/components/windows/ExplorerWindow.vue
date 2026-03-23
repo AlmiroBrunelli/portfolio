@@ -20,8 +20,8 @@ const windowWidth = ref(window.innerWidth)
 const tabs = ref([
   { 
     id: 1, 
-    path: 'Este Computador', 
-    history: ['Este Computador'], 
+    path: 'this_pc', 
+    history: ['this_pc'], 
     historyIndex: 0,
     searchQuery: ''
   }
@@ -63,8 +63,8 @@ const goForward = () => {
 }
 
 const goUp = () => {
-  if (activeTab.value.path !== 'Este Computador') {
-    navigateTo('Este Computador')
+  if (activeTab.value.path !== 'this_pc') {
+    navigateTo('this_pc')
   }
 }
 
@@ -76,8 +76,8 @@ const addTab = () => {
   const newId = Date.now()
   tabs.value.push({
     id: newId,
-    path: 'Este Computador',
-    history: ['Este Computador'],
+    path: 'this_pc',
+    history: ['this_pc'],
     historyIndex: 0,
     searchQuery: ''
   })
@@ -140,9 +140,9 @@ onUnmounted(() => {
             @auxclick.prevent.stop="e => { if (e.button === 1) closeTab(tab.id) }"
           >
             <span class="icon">
-              {{ tab.path === 'Imagens' ? '🖼️' : tab.path === 'Documentos' ? '📄' : tab.path === 'OneDrive' ? '☁️' : '🏠' }}
+              {{ tab.path === 'pictures' ? '🖼️' : tab.path === 'documents' ? '📄' : tab.path === 'onedrive' ? '☁️' : '🏠' }}
             </span>
-            <span class="label">{{ tab.path === 'Este Computador' ? i18n.t('explorer.this_pc') : tab.path === 'Documentos' ? i18n.t('explorer.documents') : tab.path === 'Imagens' ? i18n.t('explorer.pictures') : tab.path === 'OneDrive' ? i18n.t('explorer.onedrive') : tab.path === 'Rede' ? i18n.t('explorer.network') : tab.path }}</span>
+            <span class="label">{{ i18n.t(`explorer.${tab.path}`) || tab.path }}</span>
             <span class="close-tab" @click="closeTab(tab.id, $event)">✕</span>
           </div>
           <div class="add-tab" @click="addTab" :title="i18n.t('explorer.new_tab')">+</div>
@@ -155,7 +155,7 @@ onUnmounted(() => {
           :currentPath="activeTab.path"
           :canGoBack="canGoBack"
           :canGoForward="canGoForward"
-          :canGoUp="activeTab.path !== 'Este Computador'"
+          :canGoUp="activeTab.path !== 'this_pc'"
           @navigate="navigateTo"
           @back="goBack"
           @forward="goForward"

@@ -39,11 +39,30 @@ onMounted(async () => {
     try {
       // @ts-ignore
       batteryManager = await navigator.getBattery()
-      isBatterySupported.value = true
+      
+      const checkBatterySupported = () => {
+        const isMocked = batteryManager.charging && 
+                         batteryManager.level === 1 && 
+                         batteryManager.chargingTime === 0 && 
+                         batteryManager.dischargingTime === Infinity
+        const isMobile = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent)
+        
+        if (!isMocked || isMobile) {
+          isBatterySupported.value = true
+        }
+      }
+
+      checkBatterySupported()
       updateBatteryInfo(batteryManager)
 
-      batteryManager.addEventListener('levelchange', () => updateBatteryInfo(batteryManager))
-      batteryManager.addEventListener('chargingchange', () => updateBatteryInfo(batteryManager))
+      batteryManager.addEventListener('levelchange', () => {
+        isBatterySupported.value = true
+        updateBatteryInfo(batteryManager)
+      })
+      batteryManager.addEventListener('chargingchange', () => {
+        isBatterySupported.value = true
+        updateBatteryInfo(batteryManager)
+      })
     } catch (e) {
       isBatterySupported.value = false
     }

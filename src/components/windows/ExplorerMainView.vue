@@ -14,11 +14,11 @@ const props = defineProps({
 const emit = defineEmits(['navigate', 'open-file'])
 
 const rootItems = [
-  { label: 'explorer.projects', icon: '🚀', internalName: 'Projetos' },
-  { label: 'explorer.resume', icon: '📄', internalName: 'Currículo' },
-  { label: 'explorer.links', icon: '🌐', internalName: 'Links' },
-  { label: 'explorer.certificates', icon: '🏆', internalName: 'Certificados' },
-  { label: 'explorer.blog', icon: '📝', internalName: 'Blog' }
+  { label: 'explorer.projects', icon: '🚀', internalName: 'projects' },
+  { label: 'explorer.resume', icon: '📄', internalName: 'resume' },
+  { label: 'explorer.links', icon: '🌐', internalName: 'links' },
+  { label: 'explorer.certificates', icon: '🏆', internalName: 'certificates' },
+  { label: 'explorer.blog', icon: '📝', internalName: 'blog' }
 ]
 
 const imageItems = [
@@ -30,8 +30,8 @@ const imageItems = [
 
 const displayItems = computed(() => {
   let items = []
-  if (props.currentPath === 'Imagens') items = imageItems
-  else if (props.currentPath === 'Este Computador') items = rootItems
+  if (props.currentPath === 'pictures') items = imageItems
+  else if (props.currentPath === 'quick_access') items = rootItems
   else return [] // Empty for other folders for now
 
   if (props.searchQuery) {
@@ -55,9 +55,9 @@ const handleItemClick = (item) => {
 <template>
   <div class="main-view" :class="{ compact: compact }">
     <div class="content-header">
-      <h2 class="section-title">{{ currentPath === 'Este Computador' ? i18n.t('explorer.this_pc') : currentPath === 'Documentos' ? i18n.t('explorer.documents') : currentPath === 'Imagens' ? i18n.t('explorer.pictures') : currentPath === 'OneDrive' ? i18n.t('explorer.onedrive') : currentPath === 'Rede' ? i18n.t('explorer.network') : currentPath }}</h2>
+      <h2 class="section-title">{{ i18n.t(`explorer.${currentPath}`) || currentPath }}</h2>
     </div>
-    <div class="grid" :class="{ 'image-grid': currentPath === 'Imagens' }">
+    <div class="grid" :class="{ 'image-grid': currentPath === 'pictures' }">
       <div 
         v-for="item in displayItems" 
         :key="item.label" 

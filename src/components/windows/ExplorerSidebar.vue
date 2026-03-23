@@ -7,10 +7,10 @@ defineProps({
 const emit = defineEmits(['navigate'])
 
 const navItems = [
-  { label: 'explorer.quick_access', icon: '⭐', internalName: 'Acesso rápido' },
-  { label: 'explorer.onedrive', icon: '☁️', internalName: 'OneDrive' },
-  { label: 'explorer.this_pc', icon: '🖥️', internalName: 'Este Computador' },
-  { label: 'explorer.network', icon: '🌐', internalName: 'Rede' }
+  { label: 'explorer.quick_access', icon: '⭐', internalName: 'quick_access' },
+  { label: 'explorer.onedrive', icon: '☁️', internalName: 'onedrive' },
+  { label: 'explorer.this_pc', icon: '🖥️', internalName: 'this_pc' },
+  { label: 'explorer.network', icon: '🌐', internalName: 'network' }
 ]
 </script>
 
@@ -29,24 +29,22 @@ const navItems = [
     
     <div class="separator"></div>
     
-    <div class="nav-group">
       <div 
         class="nav-item" 
-        :class="{ active: currentPath === 'Documentos' }"
-        @click="emit('navigate', 'Documentos')"
+        :class="{ active: currentPath === 'documents' }"
+        @click="emit('navigate', 'documents')"
       >
         <span class="icon">📁</span>
         <span class="label">{{ i18n.t('explorer.documents') }}</span>
       </div>
       <div 
         class="nav-item" 
-        :class="{ active: currentPath === 'Imagens' }"
-        @click="emit('navigate', 'Imagens')"
+        :class="{ active: currentPath === 'pictures' }"
+        @click="emit('navigate', 'pictures')"
       >
         <span class="icon">🖼️</span>
         <span class="label">{{ i18n.t('explorer.pictures') }}</span>
       </div>
-    </div>
   </div>
 </template>
 

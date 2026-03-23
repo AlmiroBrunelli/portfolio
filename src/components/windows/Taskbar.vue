@@ -174,8 +174,8 @@ onUnmounted(() => {
         :class="{ active: isQuickSettingsOpen }"
       >
         <div class="tray-icons">
-           <NetworkIcon @mouseenter="handleMouseEnter('taskbar.network')" @mouseleave="handleMouseLeave" :size="16" class="tray-icon-img" />
-           <SoundIcon :volume="windowsState.volume" :is-muted="windowsState.isMuted" :size="16" class="tray-icon-img" />
+           <NetworkIcon @mouseenter="handleMouseEnter('taskbar.network')" @mouseleave="handleMouseLeave" :size="22" class="tray-icon-img" />
+           <SoundIcon :volume="windowsState.volume" :is-muted="windowsState.isMuted" :size="22" class="tray-icon-img" />
            <BatteryIcon @mouseenter="handleMouseEnter('taskbar.battery')" @mouseleave="handleMouseLeave" :size="18" class="tray-icon-img" />
         </div>
       </div>
@@ -218,7 +218,7 @@ onUnmounted(() => {
 .taskbar-left {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 0;
   flex: 1; /* Allow left to grow and take space */
 }
 
@@ -298,8 +298,7 @@ onUnmounted(() => {
 
 .task-btn {
     height: 40px;
-    min-width: 40px;
-    padding: 0 8px;
+    width: 40px;
     display: flex;
     justify-content: center;
     align-items: center;

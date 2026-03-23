@@ -43,7 +43,7 @@ onUnmounted(() => {
 })
 
 const isCable = computed(() => {
-  return connectionType.value === 'ethernet'
+  return !['wifi', 'cellular', 'bluetooth', 'wimax'].includes(connectionType.value)
 })
 </script>
 
@@ -72,15 +72,16 @@ const isCable = computed(() => {
       :height="size || 16" 
       fill="none" 
       stroke="currentColor" 
-      stroke-width="2" 
+      stroke-width="1.5" 
       stroke-linecap="round" 
       stroke-linejoin="round"
     >
-      <path d="M12 2v8" />
-      <path d="M12 14v8" />
-      <path d="M6 8a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2z" />
-      <path d="M9 10v4" />
-      <path d="M15 10v4" />
+      <path d="M13 16H4.5a1.5 1.5 0 0 1-1.5-1.5v-9A1.5 1.5 0 0 1 4.5 4h10A1.5 1.5 0 0 1 16 5.5v2" />
+      <path d="M7 20h5M8.5 16v4M10.5 16v4" />
+      <path d="M17 9v-1.5c0-.27614.2239-.5.5-.5h2c.2761 0 .5.22386.5.5V9" />
+      <rect x="16" y="9" width="5" height="6" rx="1" />
+      <path d="M18.5 11.5v1" />
+      <path d="M18.5 15v5" />
     </svg>
 
     <svg 
