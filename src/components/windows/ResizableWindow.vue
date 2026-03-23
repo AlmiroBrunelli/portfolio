@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, onUnmounted, computed } from 'vue'
+import { ref, onMounted, onUnmounted, computed, watch } from 'vue'
 
 const props = defineProps({
   title: String,
@@ -34,6 +34,17 @@ const isResizing = ref(false)
 const dragOffset = ref({ x: 0, y: 0 })
 const resizeType = ref('')
 const resizeStart = ref({ mouseX: 0, mouseY: 0, winX: 0, winY: 0, winW: 0, winH: 0 })
+const isAnimating = ref(false)
+
+// Watch for maximize state changes to trigger animations
+let animTimeout = null
+watch(isMaximized, () => {
+  isAnimating.value = true
+  if (animTimeout) clearTimeout(animTimeout)
+  animTimeout = setTimeout(() => {
+    isAnimating.value = false
+  }, 300) // Match CSS transition duration
+})
 
 const toggleMaximize = () => {
   isMaximized.value = !isMaximized.value
@@ -41,25 +52,69 @@ const toggleMaximize = () => {
 }
 
 const startDrag = (e) => {
-  if (isMaximized.value) return
   isDragging.value = true
-  dragOffset.value = {
-    x: e.clientX - pos.value.x,
-    y: e.clientY - pos.value.y
+  
+  if (isMaximized.value) {
+    // When dragging a maximized window, we prepare for a "pull down" restore
+    const relativeX = e.clientX / window.innerWidth
+    dragOffset.value = {
+      x: Math.min(Math.max(relativeX * size.value.width, 10), size.value.width - 10),
+      y: 16 // Assume header center
+    }
+  } else {
+    dragOffset.value = {
+      x: e.clientX - pos.value.x,
+      y: e.clientY - pos.value.y
+    }
   }
+  
   window.addEventListener('mousemove', onDrag)
   window.addEventListener('mouseup', stopDrag)
 }
 
 const onDrag = (e) => {
   if (!isDragging.value) return
+
+  if (isMaximized.value) {
+    // Detect "pull down" to restore with hysteresis (deadzone)
+    if (e.clientY > 30) {
+      isMaximized.value = false
+      emit('maximize', false)
+      // dragOffset was set in startDrag or re-calculated when maximized during drag
+    } else {
+      return // Still near the top, stay maximized
+    }
+  }
+
+  // Update window position when not maximized
   pos.value = {
     x: e.clientX - dragOffset.value.x,
-    y: e.clientY - dragOffset.value.y
+    y: Math.max(0, e.clientY - dragOffset.value.y) // Clamp to top of screen
+  }
+
+  // Snap to maximize immediately if mouse hits the top edge (<= 10px)
+  if (e.clientY <= 10) {
+    isMaximized.value = true
+    emit('maximize', true)
+    
+    // Recalculate dragOffset so pulling down feels natural after dynamic maximize
+    const relativeX = e.clientX / window.innerWidth
+    dragOffset.value = {
+      x: Math.min(Math.max(relativeX * size.value.width, 10), size.value.width - 10),
+      y: 16
+    }
   }
 }
 
-const stopDrag = () => {
+const stopDrag = (e) => {
+  if (!isDragging.value) return
+
+  // Failsafe: maximize on drop if mouse is at top edge
+  if (e.clientY <= 10) {
+    isMaximized.value = true
+    emit('maximize', true)
+  }
+
   isDragging.value = false
   window.removeEventListener('mousemove', onDrag)
   window.removeEventListener('mouseup', stopDrag)
@@ -158,7 +213,7 @@ onUnmounted(() => {
   <div 
     class="resizable-window" 
     :style="windowStyle"
-    :class="{ maximized: isMaximized, inactive: !active, dark: darkMode }"
+    :class="{ maximized: isMaximized, inactive: !active, dark: darkMode, animating: isAnimating }"
   >
     <!-- Resize Handles -->
     <template v-if="!isMaximized">
@@ -212,6 +267,15 @@ onUnmounted(() => {
   box-shadow: 0 10px 40px rgba(0,0,0,0.3);
   border: 1px solid rgba(0, 0, 0, 0.2);
   overflow: visible; /* To see resizers better, but content should be clipped */
+}
+
+/* Apply transitions only when maximizing or restoring */
+.resizable-window.animating {
+  transition: top 0.3s cubic-bezier(0.25, 0.8, 0.25, 1),
+              left 0.3s cubic-bezier(0.25, 0.8, 0.25, 1),
+              width 0.3s cubic-bezier(0.25, 0.8, 0.25, 1),
+              height 0.3s cubic-bezier(0.25, 0.8, 0.25, 1),
+              border-radius 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
 
 .resizable-window.maximized {

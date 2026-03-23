@@ -24,6 +24,9 @@ const recommendedFiles = [
   { name: 'portfolio_plan.pdf', time: 'Ontem às 14:30' },
   { name: 'projeto_final.zip', time: 'Segunda-feira' }
 ]
+const getIconUrl = (name) => {
+  return new URL(`../../assets/windows/${name}`, import.meta.url).href
+}
 </script>
 
 <template>
@@ -43,7 +46,7 @@ const recommendedFiles = [
         </div>
         <div class="apps-grid">
           <div v-for="app in pinnedApps" :key="app.name" class="app-item" @click="emit('open-app', app.name)">
-            <img v-if="app.icon.endsWith('.png')" :src="'../../assets/windows/' + app.icon" width="32" height="32" :alt="app.name" />
+            <img v-if="app.icon.endsWith('.png')" :src="getIconUrl(app.icon)" width="32" height="32" :alt="app.name" />
             <span v-else class="app-icon">{{ app.icon }}</span>
             <span class="app-name">{{ app.name }}</span>
           </div>
