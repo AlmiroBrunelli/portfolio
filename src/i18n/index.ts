@@ -1,12 +1,10 @@
 import { reactive, computed } from 'vue'
 import ptBR from './locales/pt-BR'
 import enUS from './locales/en-US'
-import esES from './locales/es-ES'
 
 const MESSAGES = {
   'pt-BR': ptBR,
-  'en-US': enUS,
-  'es-ES': esES
+  'en-US': enUS
 }
 
 type Locale = keyof typeof MESSAGES
@@ -15,7 +13,6 @@ type Locale = keyof typeof MESSAGES
 const getBrowserLocale = (): Locale => {
   const lang = navigator.language
   if (lang.startsWith('pt')) return 'pt-BR'
-  if (lang.startsWith('es')) return 'es-ES'
   return 'en-US'
 }
 

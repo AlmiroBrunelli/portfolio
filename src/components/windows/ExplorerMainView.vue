@@ -55,7 +55,7 @@ const handleItemClick = (item) => {
 <template>
   <div class="main-view" :class="{ compact: compact }">
     <div class="content-header">
-      <h2 class="section-title">{{ currentPath === 'Este Computador' ? i18n.t('explorer.this_pc') : currentPath === 'Documentos' ? i18n.t('explorer.documents') : currentPath === 'Imagens' ? i18n.t('explorer.pictures') : currentPath === 'OneDrive' ? i18n.t('explorer.onedrive') : currentPath }}</h2>
+      <h2 class="section-title">{{ currentPath === 'Este Computador' ? i18n.t('explorer.this_pc') : currentPath === 'Documentos' ? i18n.t('explorer.documents') : currentPath === 'Imagens' ? i18n.t('explorer.pictures') : currentPath === 'OneDrive' ? i18n.t('explorer.onedrive') : currentPath === 'Rede' ? i18n.t('explorer.network') : currentPath }}</h2>
     </div>
     <div class="grid" :class="{ 'image-grid': currentPath === 'Imagens' }">
       <div 

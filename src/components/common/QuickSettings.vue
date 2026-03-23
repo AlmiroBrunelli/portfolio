@@ -3,6 +3,7 @@ import { ref, onMounted, onUnmounted } from 'vue'
 import { windowsState } from '../../store'
 import SoundIcon from './SoundIcon.vue'
 import BrightnessIcon from './BrightnessIcon.vue'
+import { computed } from 'vue'
 
 const props = defineProps<{
   isOpen: boolean
@@ -11,6 +12,16 @@ const props = defineProps<{
 const emit = defineEmits(['close'])
 
 const flyoutRef = ref<HTMLElement | null>(null)
+
+const isBatterySupported = ref(false)
+const batteryLevel = ref(1)
+const isCharging = ref(false)
+let batteryManager: any = null
+
+const updateBatteryInfo = (battery: any) => {
+  batteryLevel.value = battery.level
+  isCharging.value = battery.charging
+}
 
 const handleClickOutside = (event: MouseEvent) => {
   if (props.isOpen && flyoutRef.value && !flyoutRef.value.contains(event.target as Node)) {
@@ -21,13 +32,33 @@ const handleClickOutside = (event: MouseEvent) => {
   }
 }
 
-onMounted(() => {
+onMounted(async () => {
   document.addEventListener('mousedown', handleClickOutside)
+  
+  if ('getBattery' in navigator) {
+    try {
+      // @ts-ignore
+      batteryManager = await navigator.getBattery()
+      isBatterySupported.value = true
+      updateBatteryInfo(batteryManager)
+
+      batteryManager.addEventListener('levelchange', () => updateBatteryInfo(batteryManager))
+      batteryManager.addEventListener('chargingchange', () => updateBatteryInfo(batteryManager))
+    } catch (e) {
+      isBatterySupported.value = false
+    }
+  }
 })
 
 onUnmounted(() => {
   document.removeEventListener('mousedown', handleClickOutside)
+  if (batteryManager) {
+    batteryManager.removeEventListener('levelchange', () => updateBatteryInfo(batteryManager))
+    batteryManager.removeEventListener('chargingchange', () => updateBatteryInfo(batteryManager))
+  }
 })
+
+const batteryPercentage = computed(() => Math.round(batteryLevel.value * 100))
 </script>
 
 <template>
@@ -70,12 +101,57 @@ onUnmounted(() => {
 
       <div class="flyout-footer">
         <div class="footer-left">
-          <div class="battery-status">
-            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="1" y="6" width="18" height="12" rx="2" ry="2"/><line x1="23" y1="13" x2="23" y2="11"/>
-              <rect x="3" y="8" width="12" height="8" fill="currentColor"/>
+          <div v-if="isBatterySupported" class="battery-status">
+            <svg 
+              viewBox="0 0 24 24" 
+              width="20" 
+              height="20" 
+              fill="none" 
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <!-- Battery Frame -->
+              <rect 
+                x="3" y="8" width="16" height="10" 
+                rx="1" ry="1" 
+                stroke="currentColor" 
+                stroke-width="1.5"
+              />
+              <!-- Battery Cap -->
+              <path d="M19 11h1.5v4H19" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+              
+              <!-- Battery Level Fill -->
+              <g v-if="batteryLevel >= 0.1">
+                <rect v-if="batteryLevel < 0.2" x="5" y="10" width="2" height="6" fill="#ff4d4d" />
+                <template v-else-if="batteryLevel < 0.4">
+                  <rect x="5" y="10" width="2" height="6" fill="currentColor" />
+                  <rect x="8" y="10" width="2" height="6" fill="currentColor" />
+                </template>
+                <template v-else-if="batteryLevel < 0.6">
+                  <rect x="5" y="10" width="2" height="6" fill="currentColor" />
+                  <rect x="8" y="10" width="2" height="6" fill="currentColor" />
+                  <rect x="11" y="10" width="2" height="6" fill="currentColor" />
+                </template>
+                <template v-else-if="batteryLevel < 0.9">
+                  <rect x="5" y="10" width="2" height="6" fill="currentColor" />
+                  <rect x="8" y="10" width="2" height="6" fill="currentColor" />
+                  <rect x="11" y="10" width="2" height="6" fill="currentColor" />
+                  <rect x="14" y="10" width="2" height="6" fill="currentColor" />
+                </template>
+                <rect v-else x="5" y="10" width="12" height="6" fill="currentColor" />
+              </g>
+
+              <!-- Charging Bolt -->
+              <g v-if="isCharging">
+                <path 
+                   d="M7 3l-3 7h3.5l-2.5 8 7-9h-4l2.5-6z" 
+                   fill="white" 
+                   stroke="black" 
+                   stroke-width="1.2" 
+                   stroke-linejoin="round"
+                />
+              </g>
             </svg>
-            <span>100%</span>
+            <span>{{ batteryPercentage }}%</span>
           </div>
         </div>
       </div>

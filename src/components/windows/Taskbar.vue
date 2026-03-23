@@ -4,6 +4,8 @@ import { i18n } from '../../i18n'
 import LanguageSelector from '../common/LanguageSelector.vue'
 import QuickSettings from '../common/QuickSettings.vue'
 import SoundIcon from '../common/SoundIcon.vue'
+import NetworkIcon from '../common/NetworkIcon.vue'
+import BatteryIcon from '../common/BatteryIcon.vue'
 import { windowsState } from '../../store'
 
 const props = defineProps({
@@ -164,19 +166,19 @@ onUnmounted(() => {
     </div>
 
     <div class="taskbar-right">
+      <LanguageSelector />
+
       <div 
         class="tray-icons-group" 
         @click="isQuickSettingsOpen = !isQuickSettingsOpen"
         :class="{ active: isQuickSettingsOpen }"
       >
         <div class="tray-icons">
-           <span class="tray-icon" @mouseenter="handleMouseEnter('taskbar.battery')" @mouseleave="handleMouseLeave">🔋</span>
-           <span class="tray-icon" @mouseenter="handleMouseEnter('taskbar.network')" @mouseleave="handleMouseLeave">🌐</span>
+           <NetworkIcon @mouseenter="handleMouseEnter('taskbar.network')" @mouseleave="handleMouseLeave" :size="16" class="tray-icon-img" />
            <SoundIcon :volume="windowsState.volume" :is-muted="windowsState.isMuted" :size="16" class="tray-icon-img" />
+           <BatteryIcon @mouseenter="handleMouseEnter('taskbar.battery')" @mouseleave="handleMouseLeave" :size="18" class="tray-icon-img" />
         </div>
       </div>
-
-      <LanguageSelector />
 
       <div class="clock-container" @mouseenter="handleMouseEnter(currentDate)" @mouseleave="handleMouseLeave">
          <div class="time">{{ currentTime }}</div>

@@ -142,7 +142,7 @@ onUnmounted(() => {
             <span class="icon">
               {{ tab.path === 'Imagens' ? '🖼️' : tab.path === 'Documentos' ? '📄' : tab.path === 'OneDrive' ? '☁️' : '🏠' }}
             </span>
-            <span class="label">{{ tab.path === 'Este Computador' ? i18n.t('explorer.this_pc') : tab.path === 'Documentos' ? i18n.t('explorer.documents') : tab.path === 'Imagens' ? i18n.t('explorer.pictures') : tab.path === 'OneDrive' ? i18n.t('explorer.onedrive') : tab.path }}</span>
+            <span class="label">{{ tab.path === 'Este Computador' ? i18n.t('explorer.this_pc') : tab.path === 'Documentos' ? i18n.t('explorer.documents') : tab.path === 'Imagens' ? i18n.t('explorer.pictures') : tab.path === 'OneDrive' ? i18n.t('explorer.onedrive') : tab.path === 'Rede' ? i18n.t('explorer.network') : tab.path }}</span>
             <span class="close-tab" @click="closeTab(tab.id, $event)">✕</span>
           </div>
           <div class="add-tab" @click="addTab" :title="i18n.t('explorer.new_tab')">+</div>

@@ -7,8 +7,7 @@ const selectorRef = ref(null)
 
 const languages = [
   { code: 'pt-BR', short: 'POR', region: 'PTB2', name: 'Português (Brasil)' },
-  { code: 'en-US', short: 'ENG', region: 'US', name: 'English (United States)' },
-  { code: 'es-ES', short: 'ESP', region: 'ES', name: 'Español (España)' }
+  { code: 'en-US', short: 'ENG', region: 'US', name: 'English (United States)' }
 ]
 
 const currentLanguage = computed(() => {
@@ -131,12 +130,13 @@ onUnmounted(() => {
 }
 
 .menu-header {
-  padding: 8px 12px; /* Aligned to 12px */
+  padding: 8px 12px;
   font-size: 11px;
   font-weight: 600;
   color: #aaa;
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
   margin-bottom: 4px;
+  text-align: left;
 }
 
 .menu-item {

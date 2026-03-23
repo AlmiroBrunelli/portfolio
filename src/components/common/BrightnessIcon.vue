@@ -10,15 +10,15 @@ const props = defineProps<{
 const displayBrightness = ref(props.brightness)
 
 watch(() => props.brightness, (newVal) => {
-  // Each update of the slider will reflect in the icon 200ms later
+  // Each update of the slider will reflect in the icon 100ms later
   // This creates a continuous "follow" effect with a fixed delay
   setTimeout(() => {
     displayBrightness.value = newVal
-  }, 200)
+  }, 100)
 }, { immediate: true })
 
-const rotation = computed(() => (displayBrightness.value / 100) * 180) // 180 degrees rotation from 0 to 100
-const lineLength = computed(() => 1 + (displayBrightness.value / 100) * 4) // Length varies from 1 to 5
+const rotation = computed(() => (displayBrightness.value / 100) * 90) // 90 degrees rotation from 0 to 100
+const lineLength = computed(() => 0.5 + (displayBrightness.value / 100) * 2) // Length varies from 0.5 to 2.5
 const innerRadius = 8 // 2px gap from the outer edge of the 2px stroke (6px -> 8px)
 </script>
 
@@ -36,7 +36,7 @@ const innerRadius = 8 // 2px gap from the outer edge of the 2px stroke (6px -> 8
     <circle cx="12" cy="12" r="5" />
     
     <!-- Rotating Lines Group -->
-    <g :style="{ transform: `rotate(${rotation}deg)`, transformOrigin: '12px 12px', transition: 'transform 0.2s linear' }">
+    <g :style="{ transform: `rotate(${rotation}deg)`, transformOrigin: '12px 12px', transition: 'transform 0.25s linear' }">
       <line v-for="i in 8" :key="i"
         x1="12" 
         :y1="12 - innerRadius" 
@@ -50,6 +50,6 @@ const innerRadius = 8 // 2px gap from the outer edge of the 2px stroke (6px -> 8
 
 <style scoped>
 svg {
-  transition: color 0.2s ease 0.2s;
+  transition: color 0.2s ease 0.1s;
 }
 </style>

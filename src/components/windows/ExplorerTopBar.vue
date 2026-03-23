@@ -81,13 +81,13 @@ const clearSearch = () => {
           <span class="crumb" @click="emit('navigate', 'Este Computador')">{{ i18n.t('explorer.this_pc') }}</span>
           <template v-if="currentPath !== 'Este Computador'">
             <span class="separator">></span>
-            <span class="crumb" @click="emit('navigate', currentPath)">{{ currentPath === 'Documentos' ? i18n.t('explorer.documents') : currentPath === 'Imagens' ? i18n.t('explorer.pictures') : currentPath === 'OneDrive' ? i18n.t('explorer.onedrive') : currentPath }}</span>
+            <span class="crumb" @click="emit('navigate', currentPath)">{{ currentPath === 'Documentos' ? i18n.t('explorer.documents') : currentPath === 'Imagens' ? i18n.t('explorer.pictures') : currentPath === 'OneDrive' ? i18n.t('explorer.onedrive') : currentPath === 'Rede' ? i18n.t('explorer.network') : currentPath }}</span>
           </template>
         </div>
       </div>
       
       <div class="search-box">
-        <input type="text" v-model="searchQuery" :placeholder="i18n.t('explorer.search_in') + (currentPath === 'Este Computador' ? i18n.t('explorer.this_pc') : currentPath === 'Documentos' ? i18n.t('explorer.documents') : currentPath === 'Imagens' ? i18n.t('explorer.pictures') : currentPath)" />
+        <input type="text" v-model="searchQuery" :placeholder="i18n.t('explorer.search_in') + (currentPath === 'Este Computador' ? i18n.t('explorer.this_pc') : currentPath === 'Documentos' ? i18n.t('explorer.documents') : currentPath === 'Imagens' ? i18n.t('explorer.pictures') : currentPath === 'Rede' ? i18n.t('explorer.network') : currentPath)" />
         <span v-if="searchQuery" class="clear-icon" @click="clearSearch" :title="i18n.t('explorer.clear_search')">✕</span>
         <span class="search-icon">
           <img src="../../assets/windows/search.png" width="14" height="14" :alt="i18n.t('explorer.search_in')" />

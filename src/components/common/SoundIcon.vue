@@ -36,7 +36,7 @@ const linesToShow = computed(() => {
     <polygon points="9 7 5 10 2 10 2 14 5 14 9 17 9 7" />
     
     <!-- Muted 'x' - Animated -->
-    <g :style="{ opacity: linesToShow === 0 ? 1 : 0, transition: 'opacity 0.2s ease 0.2s' }">
+    <g :style="{ opacity: linesToShow === 0 ? 1 : 0, transition: 'opacity 0.2s ease 0.1s' }">
       <line x1="21" y1="9" x2="15" y2="15" />
       <line x1="15" y1="9" x2="21" y2="15" />
     </g>
@@ -67,13 +67,13 @@ const linesToShow = computed(() => {
 
 <style scoped>
 svg {
-  transition: all 0.2s ease 0.2s;
+  transition: all 0.2s ease 0.1s;
 }
 
 .volume-line {
   opacity: 0;
   transform: translateX(-4px);
-  transition: opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1) 0.2s, transform 0.2s cubic-bezier(0.4, 0, 0.2, 1) 0.2s;
+  transition: opacity 0.1s cubic-bezier(0.4, 0, 0.2, 1) 0.1s, transform 0.1s cubic-bezier(0.4, 0, 0.2, 1) 0.1s;
 }
 
 .volume-line.visible {
