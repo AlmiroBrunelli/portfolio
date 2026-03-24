@@ -4,6 +4,7 @@ import { windowsState } from '../../store'
 import SoundIcon from './SoundIcon.vue'
 import BrightnessIcon from './BrightnessIcon.vue'
 import { computed } from 'vue'
+import { playVolumeSound } from '../../utils/audio.ts'
 
 const props = defineProps<{
   isOpen: boolean
@@ -110,6 +111,7 @@ const batteryPercentage = computed(() => Math.round(batteryLevel.value * 100))
               type="range" 
               :value="windowsState.volume" 
               @input="e => windowsState.setVolume(Number((e.target as HTMLInputElement).value))"
+              @change="e => playVolumeSound(Number((e.target as HTMLInputElement).value))"
               min="0" max="100" 
               class="win-slider" 
               :style="{ '--progress': windowsState.volume + '%' }"
@@ -228,18 +230,18 @@ const batteryPercentage = computed(() => Math.round(batteryLevel.value * 100))
   -webkit-appearance: none;
   appearance: none;
   width: 100%;
-  height: 4px;
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: 2px;
+  height: 32px; /* Increased hit area */
+  background: transparent;
   outline: none;
   position: relative;
+  cursor: pointer;
 }
 
 .win-slider::-webkit-slider-runnable-track {
   width: 100%;
   height: 4px;
   cursor: pointer;
-  background: linear-gradient(to right, #60cdff var(--progress), transparent var(--progress));
+  background: linear-gradient(to right, #60cdff var(--progress), rgba(255, 255, 255, 0.2) var(--progress));
   border-radius: 2px;
 }
 
@@ -251,7 +253,7 @@ const batteryPercentage = computed(() => Math.round(batteryLevel.value * 100))
   background: #60cdff;
   border: 4px solid #454545;
   cursor: pointer;
-  margin-top: -7px;
+  margin-top: -7px; /* Center thumb on a 4px track: (4-18)/2 = -7 */
   box-shadow: 0 2px 4px rgba(0,0,0,0.3);
   transition: transform 0.1s, background 0.1s;
 }

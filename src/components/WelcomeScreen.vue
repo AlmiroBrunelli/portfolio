@@ -2,20 +2,40 @@
 import { ref, onMounted } from 'vue'
 import { i18n } from '../i18n'
 import LoadingSpinner from './common/LoadingSpinner.vue'
+import startupSound from '../assets/sounds/0 - Windows 11 Initializing.mp3'
+import { windowsState } from '../store'
 
 const emit = defineEmits(['logged-in'])
 const showWelcome = ref(true)
-const loading = ref(true)
+const loading = ref(false)
+const showSignInButton = ref(true)
+const isStarted = ref(false)
+const welcomeText = ref('')
 
-onMounted(() => {
-  // Simulate a brief loading period before allowing entry or auto-entering
+const handleSignIn = () => {
+  showSignInButton.value = false
+  isStarted.value = true
+  loading.value = true
+  
+  // 1. Show "Iniciando" for 2s
   setTimeout(() => {
     loading.value = false
-    // After another short delay, emit the logged-in event
+    welcomeText.value = i18n.t('welcome.title')
+    
+    // 2. Transition to desktop after another 1.5s
     setTimeout(() => {
+      // Play startup sound as soon as the welcome screen disappears
+      const audio = new Audio(startupSound)
+      audio.volume = Math.pow(windowsState.volume / 100, 2)
+      audio.play().catch(e => console.warn('Startup sound failed:', e))
+      
       emit('logged-in')
-    }, 2000)
-  }, 1500)
+    }, 1500)
+  }, 2000)
+}
+
+onMounted(() => {
+  // We now wait for the "Entrar" click to start the sequence
 })
 </script>
 
@@ -35,8 +55,16 @@ onMounted(() => {
       </div>
 
       <div class="status-section">
-        <LoadingSpinner />
-        <span class="status-text">{{ loading ? i18n.t('welcome.loading') : i18n.t('welcome.title') }}</span>
+        <button v-if="showSignInButton" class="entrar-btn" @click="handleSignIn">
+          Entrar
+        </button>
+        <template v-else-if="isStarted">
+          <template v-if="loading">
+            <LoadingSpinner />
+            <span class="status-text">{{ i18n.t('welcome.loading') }}</span>
+          </template>
+          <span v-else class="status-text welcome-text">{{ welcomeText }}</span>
+        </template>
       </div>
     </div>
 
@@ -135,6 +163,28 @@ onMounted(() => {
   font-size: 1.2rem;
   font-weight: 300;
   letter-spacing: 0.5px;
+}
+
+.entrar-btn {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: white;
+  padding: 8px 32px;
+  font-size: 1.1rem;
+  font-weight: 300;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+  backdrop-filter: blur(10px);
+}
+
+.entrar-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+.welcome-text {
+  animation: fadeIn 0.5s ease-out;
 }
 
 @keyframes rotate {
