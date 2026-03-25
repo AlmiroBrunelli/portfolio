@@ -22,10 +22,10 @@ const rootItems = [
 ]
 
 const imageItems = [
-  { label: 'windows-wallpaper.png', icon: '🖼️', type: 'image', path: '/src/assets/windows/windows-wallpaper.png' },
-  { label: 'hero.png', icon: '🖼️', type: 'image', path: '/src/assets/hero.png' },
-  { label: 'background_1.jpg', icon: '🖼️', type: 'image', path: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b' },
-  { label: 'background_2.jpg', icon: '🖼️', type: 'image', path: 'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05' }
+  { label: 'windows-wallpaper.png', icon: '🖼️', type: 'image', path: '/src/assets/windows/windows-wallpaper.png', thumbnail: '/src/assets/windows/windows-wallpaper.png' },
+  { label: 'hero.png', icon: '🖼️', type: 'image', path: '/src/assets/hero.png', thumbnail: '/src/assets/hero.png' },
+  { label: 'background_1.jpg', icon: '🖼️', type: 'image', path: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b', thumbnail: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=200&h=200&fit=crop' },
+  { label: 'background_2.jpg', icon: '🖼️', type: 'image', path: 'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05', thumbnail: 'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=200&h=200&fit=crop' }
 ]
 
 const displayItems = computed(() => {
@@ -65,7 +65,7 @@ const handleItemClick = (item) => {
         @dblclick="handleItemClick(item)"
       >
         <div class="icon-wrapper">
-          <img v-if="item.type === 'image'" :src="item.path" class="thumbnail" />
+          <img v-if="item.type === 'image'" :src="item.thumbnail" class="thumbnail" loading="lazy" />
           <span v-else class="icon">{{ item.icon }}</span>
         </div>
         <span class="label">{{ item.type === 'image' ? item.label : i18n.t(item.label) }}</span>

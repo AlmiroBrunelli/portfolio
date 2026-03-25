@@ -133,7 +133,7 @@ watch(() => props.initialIndex, (newVal) => {
                 :class="{ active: index === currentIndex }"
                 @click="currentIndex = index; resetZoom()"
               >
-                <img :src="photo.path" />
+                <img :src="photo.thumbnail || photo.path" loading="lazy" />
               </div>
             </div>
           </div>
