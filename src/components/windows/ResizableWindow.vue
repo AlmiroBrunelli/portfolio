@@ -242,12 +242,25 @@ onUnmounted(() => {
 
       <div class="window-controls" @mousedown.stop>
         <button class="control-btn" @click="emit('minimize')" title="Minimizar">
-          <img src="../../assets/windows/minimize.png" width="10" height="10" alt="Minimizar" />
+          <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1" style="transform: rotate(180deg)">
+            <line x1="0" y1="5" x2="10" y2="5" />
+          </svg>
         </button>
         <button class="control-btn" @click="toggleMaximize" :title="isMaximized ? 'Restaurar' : 'Maximizar'">
-          <span>{{ isMaximized ? '❐' : '□' }}</span>
+          <svg v-if="isMaximized" width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1" style="transform: rotate(180deg)">
+            <rect x="2.5" y="0.5" width="7" height="7" />
+            <path d="M0.5 2.5V9.5H7.5V7.5" />
+            <path d="M0.5 2.5H2.5" />
+          </svg>
+          <svg v-else width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1" style="transform: rotate(180deg)">
+            <rect x="0.5" y="0.5" width="9" height="9" />
+          </svg>
         </button>
-        <button class="control-btn close" @click="emit('close')" title="Fechar">✕</button>
+        <button class="control-btn close" @click="emit('close')" title="Fechar">
+          <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.2" style="transform: rotate(180deg)">
+            <path d="M1 1L9 9M9 1L1 9" />
+          </svg>
+        </button>
       </div>
     </div>
 
