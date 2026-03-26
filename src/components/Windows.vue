@@ -6,6 +6,7 @@ import StartMenu from './windows/StartMenu.vue'
 import PhotoViewer from './windows/PhotoViewer.vue'
 import Calculator from './windows/Calculator.vue'
 import EdgeWindow from './windows/EdgeWindow.vue'
+import PdfReader from './windows/PdfReader.vue'
 
 const isExplorerOpen = ref(true)
 const isExplorerMinimized = ref(false)
@@ -21,15 +22,43 @@ const isPhotoViewerMinimized = ref(false)
 const explorerPath = ref('Este Computador')
 const focusedApp = ref('Explorer')
 
+// Window Positions & Cascading
+const cascadeIndex = ref(0)
+const explorerPos = ref(null)
+const calculatorPos = ref(null)
+const edgePos = ref(null)
+const photoViewerPos = ref(null)
+const pdfReaderPos = ref(null)
+
+const getNextCascadePos = (winWidth, winHeight) => {
+  const cascadeOffset = (cascadeIndex.value % 10) * 30
+  cascadeIndex.value++
+  
+  // Base centered position
+  const baseX = (window.innerWidth - winWidth) / 2
+  const baseY = (window.innerHeight - 48 - winHeight) / 2
+  
+  return {
+    x: baseX + cascadeOffset,
+    y: baseY + cascadeOffset
+  }
+}
+
+// PDF Reader State
+const openedPdf = ref(null)
+const pdfLabel = ref('')
+const isPdfReaderMinimized = ref(false)
+
 // Z-index & Focus Order Management
 const nextZIndex = ref(200)
 const zIndices = ref({
   Explorer: 100,
   PhotoViewer: 101,
   Calculator: 102,
-  Edge: 103
+  Edge: 103,
+  PdfReader: 104
 })
-const windowOrder = ref(['Explorer', 'PhotoViewer', 'Calculator', 'Edge'])
+const windowOrder = ref(['Explorer', 'PhotoViewer', 'Calculator', 'Edge', 'PdfReader'])
 
 const bringToFront = (app) => {
   // Move to end of order array
@@ -64,6 +93,10 @@ const findNewFocus = () => {
       focusedApp.value = 'Edge'
       return
     }
+    if (app === 'PdfReader' && openedPdf.value && !isPdfReaderMinimized.value) {
+      focusedApp.value = 'PdfReader'
+      return
+    }
   }
   focusedApp.value = null
 }
@@ -71,6 +104,7 @@ const findNewFocus = () => {
 const togglePhotoViewer = () => {
   if (openedPhoto.value) {
     if (focusedApp.value !== 'PhotoViewer' || isPhotoViewerMinimized.value) {
+      if (!photoViewerPos.value) photoViewerPos.value = getNextCascadePos(900, 700)
       isPhotoViewerMinimized.value = false
       bringToFront('PhotoViewer')
     } else {
@@ -82,6 +116,7 @@ const togglePhotoViewer = () => {
 
 const toggleEdge = () => {
   if (!isEdgeOpen.value) {
+    edgePos.value = getNextCascadePos(1000, 700)
     isEdgeOpen.value = true
     isEdgeMinimized.value = false
     bringToFront('Edge')
@@ -96,6 +131,7 @@ const toggleEdge = () => {
 
 const toggleCalculator = () => {
   if (!isCalculatorOpen.value) {
+    calculatorPos.value = getNextCascadePos(320, 500)
     isCalculatorOpen.value = true
     isCalculatorMinimized.value = false
     bringToFront('Calculator')
@@ -108,10 +144,24 @@ const toggleCalculator = () => {
   }
 }
 
+const togglePdfReader = () => {
+  if (openedPdf.value) {
+    if (focusedApp.value !== 'PdfReader' || isPdfReaderMinimized.value) {
+      if (!pdfReaderPos.value) pdfReaderPos.value = getNextCascadePos(900, 750)
+      isPdfReaderMinimized.value = false
+      bringToFront('PdfReader')
+    } else {
+      isPdfReaderMinimized.value = true
+      findNewFocus()
+    }
+  }
+}
+
 const emit = defineEmits(['change-os'])
 
 const toggleExplorer = () => {
   if (!isExplorerOpen.value) {
+    explorerPos.value = getNextCascadePos(1000, 650)
     isExplorerOpen.value = true
     isExplorerMinimized.value = false
     bringToFront('Explorer')
@@ -139,6 +189,23 @@ const minimizeExplorer = () => {
   findNewFocus()
 }
 
+const handleOpenFile = (data) => {
+  if (data.type === 'image') {
+    if (!openedPhoto.value) photoViewerPos.value = getNextCascadePos(900, 700)
+    openedPhoto.value = data.path
+    photoList.value = data.list
+    photoIndex.value = data.index
+    isPhotoViewerMinimized.value = false
+    bringToFront('PhotoViewer')
+  } else if (data.type === 'pdf') {
+    if (!openedPdf.value) pdfReaderPos.value = getNextCascadePos(900, 750)
+    openedPdf.value = data.path
+    pdfLabel.value = data.label || 'Documento'
+    isPdfReaderMinimized.value = false
+    bringToFront('PdfReader')
+  }
+}
+
 onMounted(() => {
   // Any global initialization
 })
@@ -152,10 +219,11 @@ onMounted(() => {
         :isOpen="isExplorerOpen"
         :isMinimized="isExplorerMinimized"
         :zIndex="zIndices.Explorer"
+        :initialPos="explorerPos"
         @close="closeExplorer"
         @minimize="minimizeExplorer"
         @maximize="bringToFront('Explorer')"
-        @open-file="data => { openedPhoto = data.path; photoList = data.list; photoIndex = data.index; isPhotoViewerMinimized = false; bringToFront('PhotoViewer') }"
+        @open-file="handleOpenFile"
         @update-path="path => explorerPath = path"
         @mousedown="bringToFront('Explorer')"
       />
@@ -182,7 +250,8 @@ onMounted(() => {
         :initialIndex="photoIndex"
         :isOpen="!!openedPhoto"
         :zIndex="zIndices.PhotoViewer"
-        @close="openedPhoto = null; findNewFocus()"
+        :initialPos="photoViewerPos"
+        @close="openedPhoto = null; photoViewerPos = null; findNewFocus()"
         @minimize="isPhotoViewerMinimized = true; findNewFocus()"
         @maximize="bringToFront('PhotoViewer')"
         @mousedown="bringToFront('PhotoViewer')"
@@ -193,7 +262,8 @@ onMounted(() => {
         v-show="!isCalculatorMinimized"
         :isMinimized="isCalculatorMinimized"
         :zIndex="zIndices.Calculator"
-        @close="isCalculatorOpen = false; findNewFocus()"
+        :initialPos="calculatorPos"
+        @close="isCalculatorOpen = false; calculatorPos = null; findNewFocus()"
         @minimize="isCalculatorMinimized = true; findNewFocus()"
         @maximize="bringToFront('Calculator')"
         @mousedown="bringToFront('Calculator')"
@@ -205,10 +275,26 @@ onMounted(() => {
         v-show="!isEdgeMinimized"
         :isMinimized="isEdgeMinimized"
         :zIndex="zIndices.Edge"
-        @close="isEdgeOpen = false; findNewFocus()"
+        :initialPos="edgePos"
+        @close="isEdgeOpen = false; edgePos = null; findNewFocus()"
         @minimize="isEdgeMinimized = true; findNewFocus()"
         @maximize="bringToFront('Edge')"
         @mousedown="bringToFront('Edge')"
+      />
+
+      <!-- PDF Reader -->
+      <PdfReader 
+        v-if="openedPdf"
+        v-show="!isPdfReaderMinimized"
+        :src="openedPdf"
+        :label="pdfLabel"
+        :isOpen="!!openedPdf"
+        :zIndex="zIndices.PdfReader"
+        :initialPos="pdfReaderPos"
+        @close="openedPdf = null; pdfReaderPos = null; findNewFocus()"
+        @minimize="isPdfReaderMinimized = true; findNewFocus()"
+        @maximize="bringToFront('PdfReader')"
+        @mousedown="bringToFront('PdfReader')"
       />
     </div>
 
@@ -222,6 +308,8 @@ onMounted(() => {
       :isEdgeMinimized="isEdgeMinimized"
       :isPhotoViewerOpen="!!openedPhoto"
       :isPhotoViewerMinimized="isPhotoViewerMinimized"
+      :isPdfReaderOpen="!!openedPdf"
+      :isPdfReaderMinimized="isPdfReaderMinimized"
       :explorerPath="explorerPath"
       :focusedApp="focusedApp"
       @toggleExplorer="toggleExplorer"
@@ -229,6 +317,7 @@ onMounted(() => {
       @toggleCalculator="toggleCalculator"
       @toggleEdge="toggleEdge"
       @togglePhotoViewer="togglePhotoViewer"
+      @togglePdfReader="togglePdfReader"
       @toggleStartMenu="toggleStartMenu"
     />
   </div>

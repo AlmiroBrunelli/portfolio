@@ -12,7 +12,11 @@ const props = defineProps({
     default: 0
   },
   isOpen: Boolean,
-  zIndex: Number
+  zIndex: Number,
+  initialPos: {
+    type: Object,
+    default: null
+  }
 })
 
 const emit = defineEmits(['close', 'minimize', 'maximize'])
@@ -96,6 +100,7 @@ watch(() => props.initialIndex, (newVal) => {
       icon="🖼️"
       :darkMode="true"
       :initialSize="{ width: 900, height: 700 }"
+      :initialPos="initialPos"
       :style="{ zIndex: zIndex }"
       @close="emit('close')"
       @minimize="emit('minimize')"

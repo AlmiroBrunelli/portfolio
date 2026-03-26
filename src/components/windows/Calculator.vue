@@ -4,7 +4,11 @@ import ResizableWindow from './ResizableWindow.vue'
 
 const props = defineProps({
   zIndex: Number,
-  isMinimized: Boolean
+  isMinimized: Boolean,
+  initialPos: {
+    type: Object,
+    default: null
+  }
 })
 
 const emit = defineEmits(['close', 'minimize', 'maximize'])
@@ -89,6 +93,7 @@ const equals = () => {
     :initialSize="{ width: 320, height: 500 }"
     :minWidth="280"
     :minHeight="400"
+    :initialPos="initialPos"
     :style="{ zIndex: zIndex }"
     @close="emit('close')"
     @minimize="emit('minimize')"

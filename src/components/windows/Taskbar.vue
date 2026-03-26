@@ -3,6 +3,7 @@ import { ref, onMounted, onUnmounted, computed, watch } from 'vue'
 import { i18n } from '../../i18n'
 import LanguageSelector from '../common/LanguageSelector.vue'
 import QuickSettings from '../common/QuickSettings.vue'
+import CalendarFlyout from '../common/CalendarFlyout.vue'
 import SoundIcon from '../common/SoundIcon.vue'
 import NetworkIcon from '../common/NetworkIcon.vue'
 import BatteryIcon from '../common/BatteryIcon.vue'
@@ -17,6 +18,8 @@ const props = defineProps({
   isEdgeMinimized: Boolean,
   isPhotoViewerOpen: Boolean,
   isPhotoViewerMinimized: Boolean,
+  isPdfReaderOpen: Boolean,
+  isPdfReaderMinimized: Boolean,
   focusedApp: String,
   explorerPath: {
     type: String,
@@ -24,11 +27,12 @@ const props = defineProps({
   }
 })
 
-const emit = defineEmits(['toggleExplorer', 'minimizeExplorer', 'toggleStartMenu', 'toggleCalculator', 'togglePhotoViewer', 'toggleEdge'])
+const emit = defineEmits(['toggleExplorer', 'minimizeExplorer', 'toggleStartMenu', 'toggleCalculator', 'togglePhotoViewer', 'togglePdfReader', 'toggleEdge'])
 
 const currentTime = ref('')
 const currentDate = ref('')
 const isQuickSettingsOpen = ref(false)
+const isCalendarOpen = ref(false)
 const activeTooltip = ref('')
 let tooltipTimeout = null
 
@@ -48,10 +52,10 @@ const handleMouseLeave = () => {
 
 const explorerIcon = computed(() => {
   const path = props.explorerPath
+  if (path === 'Este Computador') return '/src/assets/windows/pc.svg'
   if (path === 'Imagens') return '🖼️'
   if (path === 'OneDrive') return '☁️'
   if (path === 'Rede') return '🌐'
-  if (path === 'Este Computador') return '🖥️'
   if (path === 'Documentos') return '📄'
   return '📂'
 })
@@ -78,14 +82,29 @@ const updateTime = () => {
 // Update time when locale changes
 watch(() => i18n.state.locale, updateTime)
 
+const handleClickOutside = (event) => {
+  const taskbar = document.querySelector('.taskbar')
+  const quickSettings = document.querySelector('.quick-settings-flyout')
+  const calendar = document.querySelector('.calendar-flyout')
+  
+  if (taskbar && !taskbar.contains(event.target) && 
+      (!quickSettings || !quickSettings.contains(event.target)) &&
+      (!calendar || !calendar.contains(event.target))) {
+    isQuickSettingsOpen.value = false
+    isCalendarOpen.value = false
+  }
+}
+
 let timer
 onMounted(() => {
   updateTime()
   timer = setInterval(updateTime, 1000)
+  window.addEventListener('mousedown', handleClickOutside)
 })
 
 onUnmounted(() => {
   if (timer) clearInterval(timer)
+  window.removeEventListener('mousedown', handleClickOutside)
 })
 </script>
 
@@ -113,7 +132,10 @@ onUnmounted(() => {
         @mouseenter="handleMouseEnter('taskbar.explorer')"
         @mouseleave="handleMouseLeave"
       >
-         <span class="icon">{{ explorerIcon }}</span>
+         <span class="icon">
+           <img v-if="props.explorerPath === 'Este Computador'" :src="explorerIcon" width="22" height="22" style="display: block" />
+           <template v-else>{{ explorerIcon }}</template>
+         </span>
          <div v-if="isExplorerOpen" class="active-indicator" :class="{ minimized: isExplorerMinimized || focusedApp !== 'Explorer' }"></div>
          <Transition name="fade">
            <div v-if="activeTooltip === 'taskbar.explorer'" class="custom-tooltip">{{ i18n.t('taskbar.explorer') }}</div>
@@ -151,6 +173,21 @@ onUnmounted(() => {
       </div>
 
       <div 
+        v-if="isPdfReaderOpen"
+        class="task-btn" 
+        :class="{ active: focusedApp === 'PdfReader' && !isPdfReaderMinimized, 'has-window': true }"
+        @click="emit('togglePdfReader')"
+        @mouseenter="handleMouseEnter('taskbar.pdf_reader')"
+        @mouseleave="handleMouseLeave"
+      >
+         <img src="../../assets/windows/pdf.svg" width="24" height="24" alt="PDF Reader" />
+         <div class="active-indicator" :class="{ minimized: isPdfReaderMinimized || focusedApp !== 'PdfReader' }"></div>
+         <Transition name="fade">
+           <div v-if="activeTooltip === 'taskbar.pdf_reader'" class="custom-tooltip">{{ i18n.t('taskbar.pdf_reader') }}</div>
+         </Transition>
+      </div>
+
+      <div 
         class="task-btn" 
         :class="{ active: focusedApp === 'Edge' && !isEdgeMinimized, 'has-window': isEdgeOpen }"
         @click="emit('toggleEdge')"
@@ -170,7 +207,7 @@ onUnmounted(() => {
 
       <div 
         class="tray-icons-group" 
-        @click="isQuickSettingsOpen = !isQuickSettingsOpen"
+        @click="isQuickSettingsOpen = !isQuickSettingsOpen; isCalendarOpen = false"
         :class="{ active: isQuickSettingsOpen }"
       >
         <div class="tray-icons">
@@ -180,7 +217,7 @@ onUnmounted(() => {
         </div>
       </div>
 
-      <div class="clock-container" @mouseenter="handleMouseEnter(currentDate)" @mouseleave="handleMouseLeave">
+      <div class="clock-container" @click="isCalendarOpen = !isCalendarOpen; isQuickSettingsOpen = false" @mouseenter="handleMouseEnter(currentDate)" @mouseleave="handleMouseLeave">
          <div class="time">{{ currentTime }}</div>
          <div class="date">{{ currentDate }}</div>
          <Transition name="fade">
@@ -197,6 +234,11 @@ onUnmounted(() => {
     <QuickSettings 
       :is-open="isQuickSettingsOpen" 
       @close="isQuickSettingsOpen = false" 
+    />
+
+    <CalendarFlyout 
+      :is-open="isCalendarOpen" 
+      @close="isCalendarOpen = false" 
     />
   </div>
 </template>

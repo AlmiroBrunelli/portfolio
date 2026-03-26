@@ -76,7 +76,10 @@ const clearSearch = () => {
       </div>
       
       <div class="address-box">
-        <div class="address-icon">{{ currentPath === 'pictures' ? '🖼️' : '🏠' }}</div>
+        <div class="address-icon">
+          <img v-if="currentPath === 'this_pc'" src="../../assets/windows/pc.svg" width="16" height="16" style="display: block" />
+          <template v-else>{{ currentPath === 'pictures' ? '🖼️' : '🏠' }}</template>
+        </div>
         <div class="breadcrumbs">
           <span class="crumb" @click="emit('navigate', 'this_pc')">{{ i18n.t('explorer.this_pc') }}</span>
           <template v-if="currentPath !== 'this_pc'">

@@ -10,7 +10,7 @@ const props = defineProps({
   },
   initialPos: {
     type: Object,
-    default: () => ({ x: 100, y: 50 })
+    default: null
   },
   initialSize: {
     type: Object,
@@ -192,8 +192,10 @@ const windowStyle = computed(() => {
 })
 
 onMounted(() => {
-  // Center window if no pos provided
-  if (props.initialPos.x === 100 && props.initialPos.y === 50) {
+  if (props.initialPos) {
+    pos.value = { ...props.initialPos }
+  } else {
+    // Center window if no pos provided
     pos.value = {
       x: (window.innerWidth - size.value.width) / 2,
       y: (window.innerHeight - 48 - size.value.height) / 2

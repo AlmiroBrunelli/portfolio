@@ -14,11 +14,16 @@ const props = defineProps({
 const emit = defineEmits(['navigate', 'open-file'])
 
 const rootItems = [
-  { label: 'explorer.projects', icon: '🚀', internalName: 'projects' },
-  { label: 'explorer.resume', icon: '📄', internalName: 'resume' },
+  { label: 'explorer.projects', icon: '/src/assets/windows/project.png', internalName: 'projects' },
+  { label: 'explorer.resume', icon: '/src/assets/windows/pdf.svg', type: 'pdf', path: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf', labelText: 'Currículo.pdf' },
   { label: 'explorer.links', icon: '🌐', internalName: 'links' },
   { label: 'explorer.certificates', icon: '🏆', internalName: 'certificates' },
   { label: 'explorer.blog', icon: '📝', internalName: 'blog' }
+]
+
+const documentItems = [
+  { label: 'Curriculum_Vitae.pdf', icon: '/src/assets/windows/pdf.svg', type: 'pdf', path: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf' },
+  { label: 'Project_Proposal.pdf', icon: '/src/assets/windows/pdf.svg', type: 'pdf', path: 'https://pdfobject.com/pdf/sample.pdf' }
 ]
 
 const imageItems = [
@@ -31,6 +36,7 @@ const imageItems = [
 const displayItems = computed(() => {
   let items = []
   if (props.currentPath === 'pictures') items = imageItems
+  else if (props.currentPath === 'documents') items = documentItems
   else if (props.currentPath === 'quick_access') items = rootItems
   else return [] // Empty for other folders for now
 
@@ -45,7 +51,9 @@ const displayItems = computed(() => {
 const handleItemClick = (item) => {
     if (item.type === 'image') {
         const index = imageItems.findIndex(i => i.path === item.path)
-        emit('open-file', { path: item.path, list: imageItems, index })
+        emit('open-file', { type: 'image', path: item.path, list: imageItems, index })
+    } else if (item.type === 'pdf') {
+        emit('open-file', { type: 'pdf', path: item.path, label: item.labelText || item.label })
     } else {
         emit('navigate', item.internalName)
     }
@@ -66,6 +74,7 @@ const handleItemClick = (item) => {
       >
         <div class="icon-wrapper">
           <img v-if="item.type === 'image'" :src="item.thumbnail" class="thumbnail" loading="lazy" />
+          <img v-else-if="item.icon && item.icon.includes('/')" :src="item.icon" width="48" height="48" />
           <span v-else class="icon">{{ item.icon }}</span>
         </div>
         <span class="label">{{ item.type === 'image' ? item.label : i18n.t(item.label) }}</span>

@@ -9,7 +9,7 @@ const emit = defineEmits(['navigate'])
 const navItems = [
   { label: 'explorer.quick_access', icon: '⭐', internalName: 'quick_access' },
   { label: 'explorer.onedrive', icon: '☁️', internalName: 'onedrive' },
-  { label: 'explorer.this_pc', icon: '🖥️', internalName: 'this_pc' },
+  { label: 'explorer.this_pc', icon: '/src/assets/windows/pc.svg', internalName: 'this_pc', isImage: true },
   { label: 'explorer.network', icon: '🌐', internalName: 'network' }
 ]
 </script>
@@ -23,7 +23,10 @@ const navItems = [
       :class="{ active: currentPath === item.internalName }"
       @click="emit('navigate', item.internalName)"
     >
-      <span class="icon">{{ item.icon }}</span>
+      <span class="icon">
+        <img v-if="item.isImage" :src="item.icon" width="16" height="16" style="display: block" />
+        <template v-else>{{ item.icon }}</template>
+      </span>
       <span class="label">{{ i18n.t(item.label) }}</span>
     </div>
     

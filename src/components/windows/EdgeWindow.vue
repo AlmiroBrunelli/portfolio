@@ -5,6 +5,10 @@ import ResizableWindow from './ResizableWindow.vue'
 const props = defineProps({
   zIndex: Number,
   isMinimized: Boolean,
+  initialPos: {
+    type: Object,
+    default: null
+  },
   initialUrl: {
     type: String,
     default: 'https://www.google.com/search?igu=1'
@@ -124,6 +128,7 @@ const goHome = () => {
     :initialSize="{ width: 1000, height: 750 }"
     :minWidth="400"
     :minHeight="300"
+    :initialPos="initialPos"
     :style="{ zIndex: zIndex }"
     @close="emit('close')"
     @minimize="emit('minimize')"

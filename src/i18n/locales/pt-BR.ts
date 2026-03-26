@@ -10,6 +10,7 @@ export default {
     calculator: 'Calculadora',
     photos: 'Fotos',
     edge: 'Microsoft Edge',
+    pdf_reader: 'Leitor de PDF',
     battery: 'Bateria',
     network: 'Rede',
     sound: 'Som',
@@ -55,5 +56,11 @@ export default {
     brightness: 'Brilho',
     battery: 'Bateria',
     settings: 'Configurações'
+  },
+  calendar: {
+    minute: 'minuto',
+    minutes: 'minutos',
+    focus: 'Foco',
+    of: 'de'
   }
 }

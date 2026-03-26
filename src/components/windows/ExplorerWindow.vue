@@ -9,7 +9,11 @@ import ExplorerMainView from './ExplorerMainView.vue'
 const props = defineProps({
   isOpen: Boolean,
   isMinimized: Boolean,
-  zIndex: Number
+  zIndex: Number,
+  initialPos: {
+    type: Object,
+    default: null
+  }
 })
 
 const emit = defineEmits(['close', 'minimize', 'open-file', 'update-path'])
@@ -124,6 +128,7 @@ onUnmounted(() => {
       :showTitle="false"
       :showIcon="false"
       :initialSize="{ width: 1000, height: 650 }"
+      :initialPos="initialPos"
       :style="{ zIndex: zIndex }"
       @close="emit('close')"
       @minimize="emit('minimize')"
@@ -140,7 +145,10 @@ onUnmounted(() => {
             @auxclick.prevent.stop="e => { if (e.button === 1) closeTab(tab.id) }"
           >
             <span class="icon">
-              {{ tab.path === 'pictures' ? '🖼️' : tab.path === 'documents' ? '📄' : tab.path === 'onedrive' ? '☁️' : '🏠' }}
+              <img v-if="tab.path === 'this_pc'" src="../../assets/windows/pc.svg" width="16" height="16" style="display: block" />
+              <template v-else>
+                {{ tab.path === 'pictures' ? '🖼️' : tab.path === 'documents' ? '📄' : tab.path === 'onedrive' ? '☁️' : '🏠' }}
+              </template>
             </span>
             <span class="label">{{ i18n.t(`explorer.${tab.path}`) || tab.path }}</span>
             <span class="close-tab" @click="closeTab(tab.id, $event)">✕</span>
