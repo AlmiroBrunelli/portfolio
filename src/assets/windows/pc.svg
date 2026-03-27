@@ -1,0 +1,16 @@
+<svg width="256" height="256" viewBox="0 0 256 256" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Monitor Frame -->
+  <rect x="20" y="40" width="216" height="150" rx="12" fill="#E1E1E1" stroke="#C0C0C0" stroke-width="4"/>
+  <!-- Screen -->
+  <rect x="32" y="52" width="192" height="126" rx="6" fill="url(#screenGradient)"/>
+  <!-- Monitor Stand -->
+  <path d="M100 194H156L170 220H86L100 194Z" fill="#D0D0D0" stroke="#C0C0C0" stroke-width="4"/>
+  <rect x="120" y="190" width="16" height="10" fill="#D0D0D0"/>
+  
+  <defs>
+    <linearGradient id="screenGradient" x1="32" y1="52" x2="224" y2="178" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#7BD5FF"/>
+      <stop offset="100%" stop-color="#0078D4"/>
+    </linearGradient>
+  </defs>
+</svg>

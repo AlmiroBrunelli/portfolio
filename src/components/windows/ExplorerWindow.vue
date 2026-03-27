@@ -1,0 +1,300 @@
+<script setup>
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
+import { i18n } from '../../i18n'
+import { windowsState } from '../../store'
+import ResizableWindow from './ResizableWindow.vue'
+import ExplorerTopBar from './ExplorerTopBar.vue'
+import ExplorerSidebar from './ExplorerSidebar.vue'
+import ExplorerMainView from './ExplorerMainView.vue'
+
+const props = defineProps({
+  isOpen: Boolean,
+  isMinimized: Boolean,
+  zIndex: Number,
+  initialPos: {
+    type: Object,
+    default: null
+  }
+})
+
+const emit = defineEmits(['close', 'minimize', 'open-file', 'update-path'])
+
+const isMaximized = ref(false)
+const windowWidth = ref(window.innerWidth)
+
+const tabs = ref([
+  { 
+    id: 1, 
+    path: 'this_pc', 
+    history: ['this_pc'], 
+    historyIndex: 0,
+    searchQuery: ''
+  }
+])
+const activeTabId = ref(1)
+
+const activeTab = computed(() => tabs.value.find(t => t.id === activeTabId.value) || tabs.value[0])
+
+watch(() => activeTab.value?.path, (newPath) => {
+  if (newPath) emit('update-path', newPath)
+}, { immediate: true })
+
+const canGoBack = computed(() => activeTab.value.historyIndex > 0)
+const canGoForward = computed(() => activeTab.value.historyIndex < activeTab.value.history.length - 1)
+
+const navigateTo = (path, addToHistory = true) => {
+  if (path === activeTab.value.path) return
+  activeTab.value.path = path
+  
+  if (addToHistory) {
+    activeTab.value.history = activeTab.value.history.slice(0, activeTab.value.historyIndex + 1)
+    activeTab.value.history.push(path)
+    activeTab.value.historyIndex = activeTab.value.history.length - 1
+  }
+}
+
+const goBack = () => {
+  if (canGoBack.value) {
+    activeTab.value.historyIndex--
+    activeTab.value.path = activeTab.value.history[activeTab.value.historyIndex]
+  }
+}
+
+const goForward = () => {
+  if (canGoForward.value) {
+    activeTab.value.historyIndex++
+    activeTab.value.path = activeTab.value.history[activeTab.value.historyIndex]
+  }
+}
+
+const goUp = () => {
+  if (activeTab.value.path !== 'this_pc') {
+    navigateTo('this_pc')
+  }
+}
+
+const handleSearch = (query) => {
+  activeTab.value.searchQuery = query
+}
+
+const addTab = () => {
+  const newId = Date.now()
+  tabs.value.push({
+    id: newId,
+    path: 'this_pc',
+    history: ['this_pc'],
+    historyIndex: 0,
+    searchQuery: ''
+  })
+  activeTabId.value = newId
+}
+
+const closeTab = (id, event) => {
+  event?.stopPropagation()
+  if (tabs.value.length === 1) {
+    emit('close')
+    return
+  }
+  
+  const index = tabs.value.findIndex(t => t.id === id)
+  if (activeTabId.value === id) {
+    const nextTab = tabs.value[index + 1] || tabs.value[index - 1]
+    activeTabId.value = nextTab.id
+  }
+  tabs.value.splice(index, 1)
+}
+
+const handleResize = () => {
+  windowWidth.value = window.innerWidth
+}
+
+const showSidebar = computed(() => windowWidth.value > 750)
+
+onMounted(() => {
+  window.addEventListener('resize', handleResize)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('resize', handleResize)
+})
+</script>
+
+<template>
+  <Transition name="window">
+    <ResizableWindow 
+      v-if="isOpen && !isMinimized"
+      :title="i18n.t('taskbar.explorer')"
+      icon="📁"
+      :darkMode="windowsState.theme === 'dark'"
+      :showTitle="false"
+      :showIcon="false"
+      :initialSize="{ width: 1000, height: 650 }"
+      :initialPos="initialPos"
+      :style="{ zIndex: zIndex }"
+      @close="emit('close')"
+      @minimize="emit('minimize')"
+      @maximize="val => isMaximized = val"
+    >
+      <template #header-center>
+        <div class="explorer-tabs">
+          <div 
+            v-for="tab in tabs" 
+            :key="tab.id"
+            class="tab"
+            :class="{ active: activeTabId === tab.id }"
+            @click="activeTabId = tab.id"
+            @auxclick.prevent.stop="e => { if (e.button === 1) closeTab(tab.id) }"
+          >
+            <span class="icon">
+              <img v-if="tab.path === 'this_pc'" src="../../assets/windows/pc.svg" width="16" height="16" style="display: block" />
+              <template v-else>
+                {{ tab.path === 'pictures' ? '🖼️' : tab.path === 'documents' ? '📄' : tab.path === 'onedrive' ? '☁️' : '🏠' }}
+              </template>
+            </span>
+            <span class="label">{{ i18n.t(`explorer.${tab.path}`) || tab.path }}</span>
+            <span class="close-tab" @click="closeTab(tab.id, $event)">✕</span>
+          </div>
+          <div class="add-tab" @click="addTab" :title="i18n.t('explorer.new_tab')">+</div>
+        </div>
+      </template>
+
+      <div class="explorer-container" :class="{ maximized: isMaximized }">
+        <ExplorerTopBar 
+          :isMaximized="isMaximized"
+          :currentPath="activeTab.path"
+          :canGoBack="canGoBack"
+          :canGoForward="canGoForward"
+          :canGoUp="activeTab.path !== 'this_pc'"
+          @navigate="navigateTo"
+          @back="goBack"
+          @forward="goForward"
+          @up="goUp"
+          @refresh="() => {}"
+          @search="handleSearch"
+        />
+        
+        <div class="window-body">
+          <ExplorerSidebar 
+            v-if="showSidebar"
+            :currentPath="activeTab.path"
+            @navigate="navigateTo"
+          />
+          <ExplorerMainView 
+            :currentPath="activeTab.path"
+            @navigate="navigateTo"
+            @open-file="path => emit('open-file', path)"
+            :compact="!showSidebar"
+            :searchQuery="activeTab.searchQuery"
+          />
+        </div>
+      </div>
+    </ResizableWindow>
+  </Transition>
+</template>
+
+<style scoped>
+.explorer-container {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  overflow: hidden;
+  background: var(--win-bg);
+}
+
+.explorer-tabs {
+  display: flex;
+  align-items: flex-end;
+  height: 100%;
+  gap: 2px;
+  padding-left: 2px;
+  padding-top: 4px;
+}
+
+.tab {
+  height: 32px;
+  background: var(--win-hover);
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  gap: 8px;
+  font-size: 11px;
+  min-width: 140px;
+  max-width: 200px;
+  color: var(--win-text);
+  opacity: 0.8;
+  border: 1px solid transparent;
+  border-bottom: none;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.tab:hover {
+  background: var(--win-hover);
+}
+
+.tab.active {
+  background: var(--win-bg);
+  border-color: var(--win-border);
+  color: var(--win-text);
+  opacity: 1;
+  box-shadow: 0 -2px 5px rgba(0,0,0,0.02);
+}
+
+.close-tab {
+  margin-left: auto;
+  font-size: 9px;
+  width: 16px;
+  height: 16px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 4px;
+  transition: background 0.2s;
+}
+
+.close-tab:hover {
+  background: var(--win-hover);
+}
+
+.add-tab {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  font-size: 18px;
+  border-radius: 4px;
+  margin-bottom: 2px;
+  color: var(--win-text);
+}
+
+.add-tab:hover {
+  background: var(--win-hover);
+}
+
+.window-body {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+/* Window Transitions */
+.window-enter-active {
+  animation: win-open 0.25s cubic-bezier(0.1, 0.9, 0.2, 1);
+}
+.window-leave-active {
+  animation: win-close 0.2s cubic-bezier(0.1, 0.9, 0.2, 1);
+}
+
+@keyframes win-open {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+@keyframes win-close {
+  from { opacity: 1; transform: scale(1); }
+  to { opacity: 0; transform: scale(0.95); }
+}
+</style>

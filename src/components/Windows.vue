@@ -1,148 +1,558 @@
+<script setup lang="ts">
+import { ref, onMounted } from 'vue'
+import ExplorerWindow from './windows/ExplorerWindow.vue'
+import Taskbar from './windows/Taskbar.vue'
+import StartMenu from './windows/StartMenu.vue'
+import PhotoViewer from './windows/PhotoViewer.vue'
+import Calculator from './windows/Calculator.vue'
+import EdgeWindow from './windows/EdgeWindow.vue'
+import PdfReader from './windows/PdfReader.vue'
+import Personalization from './windows/Personalization.vue'
+import ResizableWindow from './windows/ResizableWindow.vue'
+import ContextMenu from './common/ContextMenu.vue'
+import { windowsState } from '../store'
+import { useContextMenu, type ContextMenuItem } from '../utils/useContextMenu'
+
+const isExplorerOpen = ref(true)
+const isExplorerMinimized = ref(false)
+const isStartMenuOpen = ref(false)
+const isCalculatorOpen = ref(false)
+const isCalculatorMinimized = ref(false)
+const isEdgeOpen = ref(false)
+const isEdgeMinimized = ref(false)
+const isPersonalizationOpen = ref(false)
+const personalizationPos = ref<{x: number, y: number} | null>(null)
+const openedPhoto = ref<string | null>(null)
+const photoList = ref<string[]>([])
+const photoIndex = ref(0)
+const isPhotoViewerMinimized = ref(false)
+const explorerPath = ref('Este Computador')
+const focusedApp = ref<string | null>('Explorer')
+
+const { showMenu } = useContextMenu()
+
+// Desktop Items State
+interface DesktopItem {
+  id: string;
+  label: string;
+  type: 'folder' | 'txt';
+  icon?: string;
+}
+
+const desktopItems = ref<DesktopItem[]>([
+  { id: 'pc', label: 'Este Computador', type: 'folder', icon: 'pc.svg' },
+  { id: 'trash', label: 'Lixeira', type: 'folder' }
+])
+
+const handleCreateNew = (type: 'folder' | 'txt') => {
+  const count = desktopItems.value.filter(item => item.type === type).length
+  const label = type === 'folder' 
+    ? `Nova Pasta${count > 0 ? ` (${count})` : ''}`
+    : `Novo Arquivo de Texto${count > 0 ? ` (${count})` : ''}.txt`
+    
+  desktopItems.value.push({
+    id: `item-${Date.now()}`,
+    label,
+    type
+  })
+}
+
+const handleDesktopContextMenu = (e: MouseEvent) => {
+  const items: ContextMenuItem[] = [
+    { 
+      label: 'Exibir', 
+      icon: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.2"><rect x="2" y="2" width="5" height="5" /><rect x="9" y="2" width="5" height="5" /><rect x="2" y="9" width="5" height="5" /><rect x="9" y="9" width="5" height="5" /></svg>',
+      submenu: [
+        { label: 'Ícones grandes' },
+        { label: 'Ícones médios' },
+        { label: 'Ícones pequenos' }
+      ]
+    },
+    { 
+      label: 'Classificar por', 
+      icon: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M4 4l0 8m0 0l-2-2m2 2l2-2M12 12l0-8m0 0l-2 2m2-2l2 2"/></svg>',
+      submenu: [
+        { label: 'Nome' },
+        { label: 'Tamanho' },
+        { label: 'Tipo' },
+        { label: 'Data de modificação' }
+      ]
+    },
+    { 
+      label: 'Atualizar', 
+      icon: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M14 8a6 6 0 11-1-3.3M14 3v5h-5"/></svg>',
+      action: () => window.location.reload() 
+    },
+    { divider: true },
+    { 
+      label: 'Desfazer Renomear', 
+      icon: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M3 7a5 5 0 111 4.5M3 3v4h4"/></svg>',
+      shortcut: 'Ctrl+Z',
+      disabled: true 
+    },
+    { 
+      label: 'Novo', 
+      icon: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.2"><circle cx="8" cy="8" r="6"/><path d="M8 5v6M5 8h6"/></svg>',
+      submenu: [
+        { label: 'Pasta', action: () => handleCreateNew('folder') },
+        { label: 'Atalho' },
+        { divider: true },
+        { label: 'Documento de Texto', action: () => handleCreateNew('txt') }
+      ]
+    },
+    { divider: true },
+    { 
+      label: 'Configurações de exibição', 
+      icon: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.2"><rect x="2" y="3" width="12" height="8" rx="1"/><path d="M6 14h4M8 11v3"/><circle cx="12" cy="5" r="1.5"/></svg>' 
+    },
+    { 
+      label: 'Personalizar', 
+      icon: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M13 3l-8 8-2-1 1-2 8-8 1 3zM3 13c0-2 2-2 2-2"/></svg>',
+      action: () => togglePersonalization()
+    },
+    { divider: true },
+    { 
+      label: 'Mostrar mais opções', 
+      icon: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M3 6l0-3 3 0M10 3l3 0 0 3M13 10l0 3-3 0M6 13l-3 0 0-3"/></svg>' 
+    }
+  ]
+  showMenu(e, items)
+}
+
+// Window Positions & Cascading
+const cascadeIndex = ref(0)
+const explorerPos = ref<{x: number, y: number} | null>(null)
+const calculatorPos = ref<{x: number, y: number} | null>(null)
+const edgePos = ref<{x: number, y: number} | null>(null)
+const photoViewerPos = ref<{x: number, y: number} | null>(null)
+const pdfReaderPos = ref<{x: number, y: number} | null>(null)
+
+const getNextCascadePos = (winWidth: number, winHeight: number) => {
+  const cascadeOffset = (cascadeIndex.value % 10) * 30
+  cascadeIndex.value++
+  
+  // Base centered position
+  const baseX = (window.innerWidth - winWidth) / 2
+  const baseY = (window.innerHeight - 48 - winHeight) / 2
+  
+  return {
+    x: baseX + cascadeOffset,
+    y: baseY + cascadeOffset
+  }
+}
+
+// PDF Reader State
+const openedPdf = ref<string | null>(null)
+const pdfLabel = ref('')
+const isPdfReaderMinimized = ref(false)
+
+const togglePersonalization = () => {
+  if (!isPersonalizationOpen.value) {
+    personalizationPos.value = getNextCascadePos(500, 400)
+    isPersonalizationOpen.value = true
+    bringToFront('Personalization')
+  } else if (focusedApp.value !== 'Personalization') {
+    bringToFront('Personalization')
+  } else {
+    isPersonalizationOpen.value = false
+    findNewFocus()
+  }
+}
+
+// Z-index & Focus Order Management
+const nextZIndex = ref(200)
+const zIndices = ref({
+  Explorer: 100,
+  PhotoViewer: 101,
+  Calculator: 102,
+  Edge: 103,
+  PdfReader: 104,
+  Personalization: 105
+})
+const windowOrder = ref(['Explorer', 'PhotoViewer', 'Calculator', 'Edge', 'PdfReader', 'Personalization'])
+
+const bringToFront = (app: string) => {
+  // Move to end of order array
+  const idx = windowOrder.value.indexOf(app)
+  if (idx > -1) {
+    windowOrder.value.splice(idx, 1)
+    windowOrder.value.push(app)
+  }
+  
+  nextZIndex.value++
+  zIndices.value[app as keyof typeof zIndices.value] = nextZIndex.value
+  focusedApp.value = app
+}
+
+const findNewFocus = () => {
+  // Look for the next best window to focus (from back of order list)
+  for (let i = windowOrder.value.length - 1; i >= 0; i--) {
+    const app = windowOrder.value[i]
+    if (app === 'Explorer' && isExplorerOpen.value && !isExplorerMinimized.value) {
+      focusedApp.value = 'Explorer'
+      return
+    }
+    if (app === 'Calculator' && isCalculatorOpen.value && !isCalculatorMinimized.value) {
+      focusedApp.value = 'Calculator'
+      return
+    }
+    if (app === 'PhotoViewer' && openedPhoto.value) {
+      focusedApp.value = 'PhotoViewer'
+      return
+    }
+    if (app === 'Edge' && isEdgeOpen.value && !isEdgeMinimized.value) {
+      focusedApp.value = 'Edge'
+      return
+    }
+    if (app === 'PdfReader' && openedPdf.value && !isPdfReaderMinimized.value) {
+      focusedApp.value = 'PdfReader'
+      return
+    }
+  }
+  focusedApp.value = null
+}
+
+const togglePhotoViewer = () => {
+  if (openedPhoto.value) {
+    if (focusedApp.value !== 'PhotoViewer' || isPhotoViewerMinimized.value) {
+      if (!photoViewerPos.value) photoViewerPos.value = getNextCascadePos(900, 700)
+      isPhotoViewerMinimized.value = false
+      bringToFront('PhotoViewer')
+    } else {
+      isPhotoViewerMinimized.value = true
+      findNewFocus()
+    }
+  }
+}
+
+const toggleEdge = () => {
+  if (!isEdgeOpen.value) {
+    edgePos.value = getNextCascadePos(1000, 700)
+    isEdgeOpen.value = true
+    isEdgeMinimized.value = false
+    bringToFront('Edge')
+  } else if (focusedApp.value !== 'Edge' || isEdgeMinimized.value) {
+    isEdgeMinimized.value = false
+    bringToFront('Edge')
+  } else {
+    isEdgeMinimized.value = true
+    findNewFocus()
+  }
+}
+
+const toggleCalculator = () => {
+  if (!isCalculatorOpen.value) {
+    calculatorPos.value = getNextCascadePos(320, 500)
+    isCalculatorOpen.value = true
+    isCalculatorMinimized.value = false
+    bringToFront('Calculator')
+  } else if (focusedApp.value !== 'Calculator' || isCalculatorMinimized.value) {
+    isCalculatorMinimized.value = false
+    bringToFront('Calculator')
+  } else {
+    isCalculatorMinimized.value = true
+    findNewFocus()
+  }
+}
+
+const togglePdfReader = () => {
+  if (openedPdf.value) {
+    if (focusedApp.value !== 'PdfReader' || isPdfReaderMinimized.value) {
+      if (!pdfReaderPos.value) pdfReaderPos.value = getNextCascadePos(900, 750)
+      isPdfReaderMinimized.value = false
+      bringToFront('PdfReader')
+    } else {
+      isPdfReaderMinimized.value = true
+      findNewFocus()
+    }
+  }
+}
+
+const emit = defineEmits(['change-os'])
+
+const toggleExplorer = () => {
+  if (!isExplorerOpen.value) {
+    explorerPos.value = getNextCascadePos(1000, 650)
+    isExplorerOpen.value = true
+    isExplorerMinimized.value = false
+    bringToFront('Explorer')
+  } else if (focusedApp.value !== 'Explorer' || isExplorerMinimized.value) {
+    isExplorerMinimized.value = false
+    bringToFront('Explorer')
+  } else {
+    isExplorerMinimized.value = true
+    findNewFocus()
+  }
+}
+
+const toggleStartMenu = () => {
+    isStartMenuOpen.value = !isStartMenuOpen.value
+}
+
+const handleOpenItem = (item: DesktopItem) => {
+  if (item.type === 'folder' || item.id === 'pc') {
+    toggleExplorer()
+  }
+}
+
+const closeExplorer = () => {
+  isExplorerOpen.value = false
+  isExplorerMinimized.value = false
+  findNewFocus()
+}
+
+const minimizeExplorer = () => {
+  isExplorerMinimized.value = true
+  findNewFocus()
+}
+
+const handleOpenFile = (data: { type: string, path: string, list?: string[], index?: number, label?: string }) => {
+  if (data.type === 'image') {
+    if (!openedPhoto.value) photoViewerPos.value = getNextCascadePos(900, 700)
+    openedPhoto.value = data.path
+    photoList.value = data.list || []
+    photoIndex.value = data.index || 0
+    isPhotoViewerMinimized.value = false
+    bringToFront('PhotoViewer')
+  } else if (data.type === 'pdf') {
+    if (!openedPdf.value) pdfReaderPos.value = getNextCascadePos(900, 750)
+    openedPdf.value = data.path
+    pdfLabel.value = data.label || 'Documento'
+    isPdfReaderMinimized.value = false
+    bringToFront('PdfReader')
+  }
+}
+
+onMounted(() => {
+  // Any global initialization
+})
+</script>
+
 <template>
-  <div class="windows-container">
-    <div class="acrylic-card">
-      <div class="title-bar">
-        <div class="title">My Portfolio - Windows Edition</div>
-        <div class="controls">
-          <span class="btn">_</span>
-          <span class="btn">□</span>
-          <span class="btn close">x</span>
+  <div class="windows-container" :class="windowsState.theme">
+    <!-- Desktop Area -->
+    <div class="desktop" @contextmenu.prevent="handleDesktopContextMenu">
+      <div class="desktop-icons">
+        <div 
+          v-for="item in desktopItems" 
+          :key="item.id"
+          class="desktop-icon"
+          @dblclick="handleOpenItem(item)"
+        >
+          <div class="icon-wrapper">
+             <img v-if="item.icon" :src="`/src/assets/windows/${item.icon}`" width="48" height="48" draggable="false" />
+             <span v-else-if="item.type === 'folder'" class="emoji-icon">📁</span>
+             <span v-else class="emoji-icon">📄</span>
+          </div>
+          <span class="label">{{ item.label }}</span>
         </div>
       </div>
-      <div class="content">
-        <h1>Welcome, Windows User</h1>
-        <p class="subtitle">Experience the fluidity of design.</p>
-        <div class="grid">
-          <div class="item">Projects</div>
-          <div class="item">About Me</div>
-          <div class="item">Contact</div>
-        </div>
-      </div>
+      <ExplorerWindow 
+        :isOpen="isExplorerOpen"
+        :isMinimized="isExplorerMinimized"
+        :zIndex="zIndices.Explorer"
+        :initialPos="explorerPos"
+        @close="closeExplorer"
+        @minimize="minimizeExplorer"
+        @maximize="bringToFront('Explorer')"
+        @open-file="handleOpenFile"
+        @update-path="(path: string) => explorerPath = path"
+        @mousedown="bringToFront('Explorer')"
+      />
+      
+      <!-- Start Menu -->
+      <StartMenu 
+        v-if="isStartMenuOpen"
+        style="z-index: 9999"
+        @change-os="(os: string) => emit('change-os', os)"
+        @close="isStartMenuOpen = false"
+        @open-app="(app: string) => { 
+          if (app === 'Calculator') toggleCalculator(); 
+          if (app === 'Edge') toggleEdge();
+          isStartMenuOpen = false;
+        }"
+      />
+
+      <!-- Photo Viewer -->
+      <PhotoViewer 
+        v-if="openedPhoto"
+        v-show="!isPhotoViewerMinimized"
+        :src="openedPhoto"
+        :photos="photoList"
+        :initialIndex="photoIndex"
+        :isOpen="!!openedPhoto"
+        :zIndex="zIndices.PhotoViewer"
+        :initialPos="photoViewerPos"
+        @close="openedPhoto = null; photoViewerPos = null; findNewFocus()"
+        @minimize="isPhotoViewerMinimized = true; findNewFocus()"
+        @maximize="bringToFront('PhotoViewer')"
+        @mousedown="bringToFront('PhotoViewer')"
+      />
+      <!-- Calculator -->
+      <Calculator 
+        v-if="isCalculatorOpen"
+        v-show="!isCalculatorMinimized"
+        :isMinimized="isCalculatorMinimized"
+        :zIndex="zIndices.Calculator"
+        :initialPos="calculatorPos"
+        @close="isCalculatorOpen = false; calculatorPos = null; findNewFocus()"
+        @minimize="isCalculatorMinimized = true; findNewFocus()"
+        @maximize="bringToFront('Calculator')"
+        @mousedown="bringToFront('Calculator')"
+      />
+
+      <!-- Edge Browser -->
+      <EdgeWindow 
+        v-if="isEdgeOpen"
+        v-show="!isEdgeMinimized"
+        :isMinimized="isEdgeMinimized"
+        :zIndex="zIndices.Edge"
+        :initialPos="edgePos"
+        @close="isEdgeOpen = false; edgePos = null; findNewFocus()"
+        @minimize="isEdgeMinimized = true; findNewFocus()"
+        @maximize="bringToFront('Edge')"
+        @mousedown="bringToFront('Edge')"
+      />
+
+      <!-- PDF Reader -->
+      <PdfReader 
+        v-if="openedPdf"
+        v-show="!isPdfReaderMinimized"
+        :src="openedPdf"
+        :label="pdfLabel"
+        :isOpen="!!openedPdf"
+        :zIndex="zIndices.PdfReader"
+        :initialPos="pdfReaderPos"
+        @close="openedPdf = null; pdfReaderPos = null; findNewFocus()"
+        @minimize="isPdfReaderMinimized = true; findNewFocus()"
+        @maximize="bringToFront('PdfReader')"
+        @mousedown="bringToFront('PdfReader')"
+      />
+
+      <!-- Personalization -->
+      <ResizableWindow 
+        v-if="isPersonalizationOpen"
+        title="Personalização"
+        icon="🎨"
+        iconType="emoji"
+        :initialSize="{ width: 500, height: 400 }"
+        :zIndex="zIndices.Personalization"
+        :initialPos="personalizationPos"
+        :active="focusedApp === 'Personalization'"
+        :darkMode="windowsState.theme === 'dark'"
+        @close="isPersonalizationOpen = false; findNewFocus()"
+        @mousedown="bringToFront('Personalization')"
+      >
+        <Personalization />
+      </ResizableWindow>
     </div>
-    <div class="taskbar">
-        <div class="start-btn">⊞</div>
-    </div>
+
+    <!-- Taskbar -->
+    <Taskbar 
+      :isExplorerOpen="isExplorerOpen"
+      :isExplorerMinimized="isExplorerMinimized"
+      :isCalculatorOpen="isCalculatorOpen"
+      :isCalculatorMinimized="isCalculatorMinimized"
+      :isEdgeOpen="isEdgeOpen"
+      :isEdgeMinimized="isEdgeMinimized"
+      :isPhotoViewerOpen="!!openedPhoto"
+      :isPhotoViewerMinimized="isPhotoViewerMinimized"
+      :isPdfReaderOpen="!!openedPdf"
+      :isPdfReaderMinimized="isPdfReaderMinimized"
+      :explorerPath="explorerPath"
+      :focusedApp="focusedApp"
+      @toggleExplorer="toggleExplorer"
+      @minimizeExplorer="minimizeExplorer"
+      @toggleCalculator="toggleCalculator"
+      @toggleEdge="toggleEdge"
+      @togglePhotoViewer="togglePhotoViewer"
+      @togglePdfReader="togglePdfReader"
+      @toggleStartMenu="toggleStartMenu"
+    />
+
+    <ContextMenu />
   </div>
 </template>
 
 <style scoped>
 .windows-container {
   height: 100vh;
-  background: linear-gradient(135deg, #0078d4, #00bcf2);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  overflow: hidden;
-}
-
-.acrylic-card {
-  width: 80%;
-  max-width: 1000px;
-  height: 70vh;
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 8px;
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+  width: 100vw;
+  background-image: url('../assets/windows/windows-wallpaper.png');
+  background-size: cover;
+  background-position: center;
   display: flex;
   flex-direction: column;
+  font-family: 'Segoe UI Variable', 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
   overflow: hidden;
-  animation: fadeIn 0.8s ease-out;
-}
-
-.title-bar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 8px 16px;
-  background: rgba(0, 0, 0, 0.1);
   color: white;
-  font-size: 14px;
 }
 
-.controls .btn {
-  padding: 4px 12px;
-  cursor: pointer;
-  transition: background 0.2s;
-}
-
-.controls .btn:hover {
-  background: rgba(255, 255, 255, 0.2);
-}
-
-.controls .btn.close:hover {
-  background: #e81123;
-}
-
-.content {
+.desktop {
   flex: 1;
-  padding: 40px;
-  color: white;
-  overflow-y: auto;
+  position: relative;
+  width: 100%;
 }
 
-h1 {
-  font-size: 3rem;
-  font-weight: 300;
-  margin-bottom: 10px;
-}
-
-.subtitle {
-  font-size: 1.2rem;
-  opacity: 0.8;
-  margin-bottom: 40px;
-}
-
-.grid {
+.desktop-icons {
+  position: absolute;
+  top: 0;
+  left: 0;
+  padding: 10px;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 20px;
+  grid-template-rows: repeat(auto-fill, 100px);
+  grid-auto-flow: column;
+  gap: 10px;
+  height: 100%;
+  pointer-events: none;
 }
 
-.item {
-  background: rgba(255, 255, 255, 0.1);
-  padding: 30px;
+.desktop-icon {
+  width: 80px;
+  height: 100px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 5px;
   border-radius: 4px;
+  cursor: default;
+  pointer-events: auto;
+  transition: background 0.2s;
+  border: 1px solid transparent;
+  user-select: none;
+}
+
+.desktop-icon:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.icon-wrapper {
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 5px;
+}
+
+.emoji-icon {
+  font-size: 40px;
+}
+
+.label {
+  font-size: 12px;
+  color: white;
   text-align: center;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  transition: transform 0.3s, background 0.3s;
-  cursor: pointer;
-}
-
-.item:hover {
-  transform: translateY(-5px);
-  background: rgba(255, 255, 255, 0.2);
-  border-color: rgba(255, 255, 255, 0.3);
-}
-
-.taskbar {
-    position: absolute;
-    bottom: 0;
-    width: 100%;
-    height: 48px;
-    background: rgba(0, 0, 0, 0.2);
-    backdrop-filter: blur(10px);
-    display: flex;
-    align-items: center;
-    padding: 0 10px;
-}
-
-.start-btn {
-    font-size: 24px;
-    color: white;
-    padding: 5px 15px;
-    transition: background 0.2s;
-    cursor: pointer;
-}
-
-.start-btn:hover {
-    background: rgba(255, 255, 255, 0.1);
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: scale(0.95); }
-  to { opacity: 1; transform: scale(1); }
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  word-break: break-all;
 }
 </style>
+
+
+
