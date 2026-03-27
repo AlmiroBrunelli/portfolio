@@ -104,25 +104,25 @@ const clearSearch = () => {
 .explorer-header {
   display: flex;
   flex-direction: column;
-  background: #f3f3f3;
+  background: var(--win-glass-bg);
   user-select: none;
 }
 
 .explorer-nav-toolbar {
   display: flex;
   flex-direction: column;
-  background: #f3f3f3;
+  background: var(--win-glass-bg);
   user-select: none;
 }
 
 .address-bar-container {
   height: 48px;
-  background: #fff;
+  background: var(--win-bg);
   display: flex;
   align-items: center;
   padding: 0 12px;
   gap: 12px;
-  border-bottom: 1px solid #e5e5e5;
+  border-bottom: 1px solid var(--win-border);
 }
 
 .nav-buttons {
@@ -141,10 +141,10 @@ const clearSearch = () => {
   align-items: center;
   cursor: pointer;
   font-size: 16px;
-  color: #555;
+  color: var(--win-text);
 }
 
-.nav-btn:hover { background: rgba(0,0,0,0.05); }
+.nav-btn:hover { background: var(--win-hover); }
 .nav-btn.disabled {
   opacity: 0.3;
   cursor: default;
@@ -154,8 +154,8 @@ const clearSearch = () => {
 .address-box {
   flex: 1;
   height: 32px;
-  background: #fff;
-  border: 1px solid #ddd;
+  background: var(--win-bg);
+  border: 1px solid var(--win-border);
   border-radius: 4px;
   display: flex;
   align-items: center;
@@ -168,7 +168,7 @@ const clearSearch = () => {
   display: flex;
   align-items: center;
   gap: 6px;
-  color: #333;
+  color: var(--win-text);
 }
 
 .crumb:hover { text-decoration: underline; cursor: pointer; }
@@ -177,8 +177,8 @@ const clearSearch = () => {
 .search-box {
   width: 280px;
   height: 32px;
-  background: #fff;
-  border: 1px solid #ddd;
+  background: var(--win-bg);
+  border: 1px solid var(--win-border);
   border-radius: 4px;
   display: flex;
   align-items: center;
@@ -189,8 +189,8 @@ const clearSearch = () => {
 }
 
 .search-box:hover {
-  background: #fdfdfd;
-  border-color: #ccc;
+  background: var(--win-hover);
+  border-color: var(--win-border);
 }
 
 .search-box::after {
@@ -214,7 +214,7 @@ const clearSearch = () => {
   outline: none;
   font-size: 13px;
   background: transparent;
-  color: #333;
+  color: var(--win-text);
 }
 
 .clear-icon {

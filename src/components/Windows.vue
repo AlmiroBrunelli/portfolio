@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import ExplorerWindow from './windows/ExplorerWindow.vue'
 import Taskbar from './windows/Taskbar.vue'
@@ -7,6 +7,11 @@ import PhotoViewer from './windows/PhotoViewer.vue'
 import Calculator from './windows/Calculator.vue'
 import EdgeWindow from './windows/EdgeWindow.vue'
 import PdfReader from './windows/PdfReader.vue'
+import Personalization from './windows/Personalization.vue'
+import ResizableWindow from './windows/ResizableWindow.vue'
+import ContextMenu from './common/ContextMenu.vue'
+import { windowsState } from '../store'
+import { useContextMenu, type ContextMenuItem } from '../utils/useContextMenu'
 
 const isExplorerOpen = ref(true)
 const isExplorerMinimized = ref(false)
@@ -15,22 +20,88 @@ const isCalculatorOpen = ref(false)
 const isCalculatorMinimized = ref(false)
 const isEdgeOpen = ref(false)
 const isEdgeMinimized = ref(false)
-const openedPhoto = ref(null)
-const photoList = ref([])
+const isPersonalizationOpen = ref(false)
+const personalizationPos = ref<{x: number, y: number} | null>(null)
+const openedPhoto = ref<string | null>(null)
+const photoList = ref<string[]>([])
 const photoIndex = ref(0)
 const isPhotoViewerMinimized = ref(false)
 const explorerPath = ref('Este Computador')
-const focusedApp = ref('Explorer')
+const focusedApp = ref<string | null>('Explorer')
+
+const { showMenu } = useContextMenu()
+
+const handleDesktopContextMenu = (e: MouseEvent) => {
+  const items: ContextMenuItem[] = [
+    { 
+      label: 'Exibir', 
+      icon: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.2"><rect x="2" y="2" width="5" height="5" /><rect x="9" y="2" width="5" height="5" /><rect x="2" y="9" width="5" height="5" /><rect x="9" y="9" width="5" height="5" /></svg>',
+      submenu: [
+        { label: 'Ícones grandes' },
+        { label: 'Ícones médios' },
+        { label: 'Ícones pequenos' }
+      ]
+    },
+    { 
+      label: 'Classificar por', 
+      icon: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M4 4l0 8m0 0l-2-2m2 2l2-2M12 12l0-8m0 0l-2 2m2-2l2 2"/></svg>',
+      submenu: [
+        { label: 'Nome' },
+        { label: 'Tamanho' },
+        { label: 'Tipo' },
+        { label: 'Data de modificação' }
+      ]
+    },
+    { 
+      label: 'Atualizar', 
+      icon: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M14 8a6 6 0 11-1-3.3M14 3v5h-5"/></svg>',
+      action: () => window.location.reload() 
+    },
+    { divider: true },
+    { 
+      label: 'Desfazer Renomear', 
+      icon: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M3 7a5 5 0 111 4.5M3 3v4h4"/></svg>',
+      shortcut: 'Ctrl+Z',
+      disabled: true 
+    },
+    { 
+      label: 'Novo', 
+      icon: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.2"><circle cx="8" cy="8" r="6"/><path d="M8 5v6M5 8h6"/></svg>',
+      submenu: [
+        { label: 'Pasta' },
+        { label: 'Atalho' },
+        { divider: true },
+        { label: 'Documento de Texto' }
+      ]
+    },
+    { divider: true },
+    { 
+      label: 'Configurações de exibição', 
+      icon: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.2"><rect x="2" y="3" width="12" height="8" rx="1"/><path d="M6 14h4M8 11v3"/><circle cx="12" cy="5" r="1.5"/></svg>' 
+    },
+    { 
+      label: 'Personalizar', 
+      icon: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M13 3l-8 8-2-1 1-2 8-8 1 3zM3 13c0-2 2-2 2-2"/></svg>',
+      action: () => togglePersonalization()
+    },
+    { divider: true },
+    { 
+      label: 'Mostrar mais opções', 
+      icon: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M3 6l0-3 3 0M10 3l3 0 0 3M13 10l0 3-3 0M6 13l-3 0 0-3"/></svg>' 
+    }
+  ]
+  showMenu(e, items)
+}
 
 // Window Positions & Cascading
 const cascadeIndex = ref(0)
-const explorerPos = ref(null)
-const calculatorPos = ref(null)
-const edgePos = ref(null)
-const photoViewerPos = ref(null)
-const pdfReaderPos = ref(null)
+const explorerPos = ref<{x: number, y: number} | null>(null)
+const calculatorPos = ref<{x: number, y: number} | null>(null)
+const edgePos = ref<{x: number, y: number} | null>(null)
+const photoViewerPos = ref<{x: number, y: number} | null>(null)
+const pdfReaderPos = ref<{x: number, y: number} | null>(null)
 
-const getNextCascadePos = (winWidth, winHeight) => {
+const getNextCascadePos = (winWidth: number, winHeight: number) => {
   const cascadeOffset = (cascadeIndex.value % 10) * 30
   cascadeIndex.value++
   
@@ -45,9 +116,22 @@ const getNextCascadePos = (winWidth, winHeight) => {
 }
 
 // PDF Reader State
-const openedPdf = ref(null)
+const openedPdf = ref<string | null>(null)
 const pdfLabel = ref('')
 const isPdfReaderMinimized = ref(false)
+
+const togglePersonalization = () => {
+  if (!isPersonalizationOpen.value) {
+    personalizationPos.value = getNextCascadePos(500, 400)
+    isPersonalizationOpen.value = true
+    bringToFront('Personalization')
+  } else if (focusedApp.value !== 'Personalization') {
+    bringToFront('Personalization')
+  } else {
+    isPersonalizationOpen.value = false
+    findNewFocus()
+  }
+}
 
 // Z-index & Focus Order Management
 const nextZIndex = ref(200)
@@ -56,11 +140,12 @@ const zIndices = ref({
   PhotoViewer: 101,
   Calculator: 102,
   Edge: 103,
-  PdfReader: 104
+  PdfReader: 104,
+  Personalization: 105
 })
-const windowOrder = ref(['Explorer', 'PhotoViewer', 'Calculator', 'Edge', 'PdfReader'])
+const windowOrder = ref(['Explorer', 'PhotoViewer', 'Calculator', 'Edge', 'PdfReader', 'Personalization'])
 
-const bringToFront = (app) => {
+const bringToFront = (app: string) => {
   // Move to end of order array
   const idx = windowOrder.value.indexOf(app)
   if (idx > -1) {
@@ -69,7 +154,7 @@ const bringToFront = (app) => {
   }
   
   nextZIndex.value++
-  zIndices.value[app] = nextZIndex.value
+  zIndices.value[app as keyof typeof zIndices.value] = nextZIndex.value
   focusedApp.value = app
 }
 
@@ -189,12 +274,12 @@ const minimizeExplorer = () => {
   findNewFocus()
 }
 
-const handleOpenFile = (data) => {
+const handleOpenFile = (data: { type: string, path: string, list?: string[], index?: number, label?: string }) => {
   if (data.type === 'image') {
     if (!openedPhoto.value) photoViewerPos.value = getNextCascadePos(900, 700)
     openedPhoto.value = data.path
-    photoList.value = data.list
-    photoIndex.value = data.index
+    photoList.value = data.list || []
+    photoIndex.value = data.index || 0
     isPhotoViewerMinimized.value = false
     bringToFront('PhotoViewer')
   } else if (data.type === 'pdf') {
@@ -212,9 +297,9 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="windows-container">
+  <div class="windows-container" :class="windowsState.theme">
     <!-- Desktop Area -->
-    <div class="desktop">
+    <div class="desktop" @contextmenu.prevent="handleDesktopContextMenu">
       <ExplorerWindow 
         :isOpen="isExplorerOpen"
         :isMinimized="isExplorerMinimized"
@@ -224,7 +309,7 @@ onMounted(() => {
         @minimize="minimizeExplorer"
         @maximize="bringToFront('Explorer')"
         @open-file="handleOpenFile"
-        @update-path="path => explorerPath = path"
+        @update-path="(path: string) => explorerPath = path"
         @mousedown="bringToFront('Explorer')"
       />
       
@@ -232,9 +317,9 @@ onMounted(() => {
       <StartMenu 
         v-if="isStartMenuOpen"
         style="z-index: 9999"
-        @change-os="os => emit('change-os', os)"
+        @change-os="(os: string) => emit('change-os', os)"
         @close="isStartMenuOpen = false"
-        @open-app="app => { 
+        @open-app="(app: string) => { 
           if (app === 'Calculator') toggleCalculator(); 
           if (app === 'Edge') toggleEdge();
           isStartMenuOpen = false;
@@ -296,6 +381,23 @@ onMounted(() => {
         @maximize="bringToFront('PdfReader')"
         @mousedown="bringToFront('PdfReader')"
       />
+
+      <!-- Personalization -->
+      <ResizableWindow 
+        v-if="isPersonalizationOpen"
+        title="Personalização"
+        icon="🎨"
+        iconType="emoji"
+        :initialSize="{ width: 500, height: 400 }"
+        :zIndex="zIndices.Personalization"
+        :initialPos="personalizationPos"
+        :active="focusedApp === 'Personalization'"
+        :darkMode="windowsState.theme === 'dark'"
+        @close="isPersonalizationOpen = false; findNewFocus()"
+        @mousedown="bringToFront('Personalization')"
+      >
+        <Personalization />
+      </ResizableWindow>
     </div>
 
     <!-- Taskbar -->
@@ -320,6 +422,8 @@ onMounted(() => {
       @togglePdfReader="togglePdfReader"
       @toggleStartMenu="toggleStartMenu"
     />
+
+    <ContextMenu />
   </div>
 </template>
 

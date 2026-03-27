@@ -1,6 +1,7 @@
-<script setup>
+<script setup lang="ts">
 import { ref, computed } from 'vue'
 import ResizableWindow from './ResizableWindow.vue'
+import { windowsState } from '../../store'
 
 const props = defineProps({
   src: {
@@ -22,7 +23,6 @@ const props = defineProps({
 const emit = defineEmits(['close', 'minimize', 'maximize'])
 
 const isMaximized = ref(false)
-const zoomLevel = ref(100)
 
 const pdfUrl = computed(() => {
   // If we wanted to add parameters like page number or zoom to the iframe src:
@@ -31,8 +31,8 @@ const pdfUrl = computed(() => {
 })
 
 const printPdf = () => {
-  const iframe = document.getElementById('pdf-iframe')
-  if (iframe) {
+  const iframe = document.getElementById('pdf-iframe') as HTMLIFrameElement
+  if (iframe && iframe.contentWindow) {
     iframe.contentWindow.print()
   }
 }
@@ -45,13 +45,13 @@ const printPdf = () => {
       :title="`${label} - PDF Reader`"
       icon="/src/assets/windows/pdf.svg"
       iconType="image"
-      :darkMode="false"
+      :darkMode="windowsState.theme === 'dark'"
       :initialSize="{ width: 900, height: 750 }"
       :initialPos="initialPos"
       :style="{ zIndex: zIndex }"
       @close="emit('close')"
       @minimize="emit('minimize')"
-      @maximize="val => { isMaximized = val; emit('maximize', val) }"
+      @maximize="(val: boolean) => { isMaximized = val; emit('maximize', val) }"
     >
       <div class="pdf-viewer-container" :class="{ maximized: isMaximized }">
         <!-- PDF Toolbar -->
@@ -125,14 +125,14 @@ const printPdf = () => {
   display: flex;
   flex-direction: column;
   flex: 1;
-  background: #f3f3f3;
+  background: var(--win-bg);
   overflow: hidden;
 }
 
 .pdf-toolbar {
   height: 48px;
-  background: #fff;
-  border-bottom: 1px solid #ddd;
+  background: var(--win-bg);
+  border-bottom: 1px solid var(--win-border);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -157,19 +157,19 @@ const printPdf = () => {
   justify-content: center;
   align-items: center;
   cursor: pointer;
-  color: #444;
+  color: var(--win-text);
   transition: background 0.2s, color 0.2s;
 }
 
 .toolbar-btn:hover {
-  background: #eee;
-  color: #000;
+  background: var(--win-hover);
+  color: var(--win-text);
 }
 
 .separator {
   width: 1px;
   height: 24px;
-  background: #ddd;
+  background: var(--win-border);
   margin: 0 4px;
 }
 
@@ -178,21 +178,23 @@ const printPdf = () => {
   align-items: center;
   gap: 8px;
   font-size: 13px;
-  color: #666;
+  color: var(--win-text);
 }
 
 .page-input {
   width: 32px;
   height: 24px;
   text-align: center;
-  border: 1px solid #ddd;
+  background: var(--win-bg);
+  border: 1px solid var(--win-border);
   border-radius: 4px;
   font-size: 13px;
+  color: var(--win-text);
 }
 
 .zoom-text {
   font-size: 13px;
-  color: #666;
+  color: var(--win-text);
   min-width: 40px;
   text-align: center;
 }

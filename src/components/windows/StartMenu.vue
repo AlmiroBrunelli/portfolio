@@ -1,6 +1,6 @@
-<script setup>
-import { ref } from 'vue'
+<script setup lang="ts">
 import { i18n } from '../../i18n'
+import { windowsState } from '../../store'
 
 const emit = defineEmits(['change-os', 'close', 'open-app'])
 
@@ -24,7 +24,7 @@ const recommendedFiles = [
   { name: 'portfolio_plan.pdf', time: 'Ontem às 14:30' },
   { name: 'projeto_final.zip', time: 'Segunda-feira' }
 ]
-const getIconUrl = (name) => {
+const getIconUrl = (name: string) => {
   return new URL(`../../assets/windows/${name}`, import.meta.url).href
 }
 </script>
@@ -105,10 +105,10 @@ const getIconUrl = (name) => {
   max-width: calc(100% - 24px);
   height: 600px;
   max-height: calc(100vh - 70px);
-  background: rgba(28, 28, 28, 0.85);
+  background: var(--win-glass-bg);
   backdrop-filter: blur(25px);
   border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--win-border);
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -142,7 +142,7 @@ const getIconUrl = (name) => {
 }
 
 .search-bar {
-  background: rgba(255, 255, 255, 0.9);
+  background: v-bind('windowsState.theme === "dark" ? "rgba(255, 255, 255, 0.9)" : "rgba(255, 255, 255, 0.9)"');
   height: 36px;
   border-radius: 18px;
   display: flex;
@@ -179,13 +179,13 @@ const getIconUrl = (name) => {
 .section-title {
   font-size: 13px;
   font-weight: 600;
-  color: #fff;
+  color: var(--win-text);
 }
 
 .all-apps {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: #fff;
+  background: var(--win-hover);
+  border: 1px solid var(--win-border);
+  color: var(--win-text);
   font-size: 11px;
   padding: 4px 10px;
   border-radius: 4px;
@@ -210,10 +210,10 @@ const getIconUrl = (name) => {
   transition: background 0.2s;
 }
 
-.app-item:hover { background: rgba(255, 255, 255, 0.1); }
+.app-item:hover { background: var(--win-hover); }
 
 .app-icon { font-size: 24px; }
-.app-name { font-size: 11px; color: #fff; text-align: center; }
+.app-name { font-size: 11px; color: var(--win-text); text-align: center; }
 
 .recommended-list {
   display: grid;
@@ -230,16 +230,16 @@ const getIconUrl = (name) => {
   cursor: pointer;
 }
 
-.recommended-item:hover { background: rgba(255, 255, 255, 0.1); }
+.recommended-item:hover { background: var(--win-hover); }
 
 .file-icon { font-size: 20px; }
 .file-info { display: flex; flex-direction: column; }
-.file-name { font-size: 12px; color: #fff; }
-.file-time { font-size: 10px; color: rgba(255, 255, 255, 0.6); }
+.file-name { font-size: 12px; color: var(--win-text); }
+.file-time { font-size: 10px; color: var(--win-text); opacity: 0.6; }
 
 .user-power-section {
   height: 64px;
-  background: rgba(0, 0, 0, 0.2);
+  background: v-bind('windowsState.theme === "dark" ? "rgba(0, 0, 0, 0.2)" : "rgba(255, 255, 255, 0.5)"');
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -255,7 +255,7 @@ const getIconUrl = (name) => {
   cursor: pointer;
 }
 
-.user-profile:hover { background: rgba(255, 255, 255, 0.1); }
+.user-profile:hover { background: var(--win-hover); }
 
 .avatar {
   width: 32px;
@@ -267,7 +267,7 @@ const getIconUrl = (name) => {
   font-size: 18px;
 }
 
-.username { font-size: 12px; font-weight: 500; color: #fff; }
+.username { font-size: 12px; font-weight: 500; color: var(--win-text); }
 
 .power-os-group {
     display: flex;
@@ -297,7 +297,7 @@ const getIconUrl = (name) => {
     margin: 0 4px;
 }
 
-.power-icon { font-size: 18px; color: #fff; }
+.power-icon { font-size: 18px; color: var(--win-text); }
 
 /* Responsiveness */
 @media (max-width: 680px) {

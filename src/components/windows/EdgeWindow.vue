@@ -1,6 +1,7 @@
-<script setup>
+<script setup lang="ts">
 import { ref, watch, computed } from 'vue'
 import ResizableWindow from './ResizableWindow.vue'
+import { windowsState } from '../../store'
 
 const props = defineProps({
   zIndex: Number,
@@ -91,7 +92,7 @@ const addTab = () => {
   activeTabId.value = newId
 }
 
-const closeTab = (id, event) => {
+const closeTab = (id: number, event?: MouseEvent) => {
   event?.stopPropagation()
   if (tabs.value.length === 1) {
     emit('close')
@@ -125,6 +126,7 @@ const goHome = () => {
     title="Microsoft Edge"
     icon="../../assets/windows/ms-edge.png"
     iconType="image"
+    :darkMode="windowsState.theme === 'dark'"
     :initialSize="{ width: 1000, height: 750 }"
     :minWidth="400"
     :minHeight="300"
@@ -214,12 +216,12 @@ const goHome = () => {
   display: flex;
   flex-direction: column;
   height: 100%;
-  background: #f7f9fa;
+  background: var(--win-bg);
 }
 
 .edge-tabs-bar {
   height: 40px;
-  background: #e3e7ea;
+  background: var(--win-glass-bg);
   display: flex;
   align-items: flex-end;
   padding: 0 40px 0 8px;
@@ -239,14 +241,14 @@ const goHome = () => {
   height: 34px;
   min-width: 120px;
   max-width: 200px;
-  background: rgba(255, 255, 255, 0.5);
+  background: var(--win-hover);
   border-radius: 8px 8px 0 0;
   display: flex;
   align-items: center;
   padding: 0 10px;
   gap: 8px;
   font-size: 12px;
-  color: #444;
+  color: var(--win-text);
   cursor: pointer;
   border: 1px solid transparent;
   border-bottom: none;
@@ -255,12 +257,12 @@ const goHome = () => {
 }
 
 .edge-tab:hover {
-  background: rgba(255, 255, 255, 0.8);
+  background: var(--win-hover);
 }
 
 .edge-tab.active {
-  background: #f7f9fa;
-  color: #000;
+  background: var(--win-bg);
+  color: var(--win-text);
   z-index: 2;
 }
 
@@ -290,7 +292,7 @@ const goHome = () => {
 }
 
 .edge-tab:hover .tab-close { opacity: 0.6; }
-.tab-close:hover { background: rgba(0,0,0,0.1); opacity: 1 !important; }
+.tab-close:hover { background: var(--win-hover); opacity: 1 !important; }
 
 .add-tab-btn {
   width: 28px;
@@ -306,12 +308,12 @@ const goHome = () => {
   margin-bottom: 4px;
 }
 
-.add-tab-btn:hover { background: rgba(0,0,0,0.05); }
+.add-tab-btn:hover { background: var(--win-hover); }
 
 .edge-toolbar {
   height: 48px;
-  background: #f7f9fa;
-  border-bottom: 1px solid #dde1e5;
+  background: var(--win-bg);
+  border-bottom: 1px solid var(--win-border);
   display: flex;
   align-items: center;
   padding: 0 8px;
@@ -333,11 +335,11 @@ const goHome = () => {
   justify-content: center;
   align-items: center;
   cursor: pointer;
-  color: #444;
+  color: var(--win-text);
 }
 
 .tool-btn:hover:not(:disabled) {
-  background: rgba(0,0,0,0.08);
+  background: var(--win-hover);
 }
 
 .tool-btn:disabled {
@@ -348,8 +350,8 @@ const goHome = () => {
 .address-bar {
   flex: 1;
   height: 32px;
-  background: #fff;
-  border: 1px solid #dde1e5;
+  background: var(--win-bg);
+  border: 1px solid var(--win-border);
   border-radius: 16px;
   display: flex;
   align-items: center;
@@ -369,7 +371,7 @@ const goHome = () => {
   background: transparent;
   outline: none;
   font-size: 13px;
-  color: #333;
+  color: var(--win-text);
 }
 
 .security-info {

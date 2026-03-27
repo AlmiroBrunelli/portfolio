@@ -86,7 +86,7 @@ const handleItemClick = (item) => {
 <style scoped>
 .main-view {
   flex: 1;
-  background: #fff;
+  background: var(--win-bg);
   padding: 24px;
   overflow-y: auto;
   transition: padding 0.3s;
@@ -107,8 +107,8 @@ const handleItemClick = (item) => {
 .section-title {
   font-size: 14px;
   font-weight: 600;
-  color: #333;
-  border-bottom: 1px solid #eee;
+  color: var(--win-text);
+  border-bottom: 1px solid var(--win-border);
   padding-bottom: 8px;
 }
 
@@ -136,8 +136,8 @@ const handleItemClick = (item) => {
 }
 
 .grid-item:hover {
-  background: rgba(0, 120, 212, 0.05);
-  border-color: rgba(0, 120, 212, 0.1);
+  background: var(--win-hover);
+  border-color: var(--win-border);
 }
 
 .icon-wrapper {
@@ -168,7 +168,7 @@ const handleItemClick = (item) => {
 
 .label {
   font-size: 13px;
-  color: #333;
+  color: var(--win-text);
   text-align: center;
 }
 </style>

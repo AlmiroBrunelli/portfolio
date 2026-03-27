@@ -54,9 +54,9 @@ const navItems = [
 <style scoped>
 .sidebar {
   width: 220px;
-  background: rgba(243, 243, 243, 0.7);
+  background: var(--win-glass-bg);
   backdrop-filter: blur(10px);
-  border-right: 1px solid #e5e5e5;
+  border-right: 1px solid var(--win-border);
   padding: 12px 8px;
   display: flex;
   flex-direction: column;
@@ -72,15 +72,15 @@ const navItems = [
   font-size: 13px;
   cursor: pointer;
   transition: background 0.1s;
-  color: #333;
+  color: var(--win-text);
 }
 
 .nav-item:hover {
-  background: rgba(0,0,0,0.05);
+  background: var(--win-hover);
 }
 
 .nav-item.active {
-  background: rgba(0,0,0,0.05);
+  background: var(--win-hover);
   font-weight: 600;
 }
 
@@ -90,7 +90,7 @@ const navItems = [
 
 .separator {
   height: 1px;
-  background: #e5e5e5;
+  background: var(--win-border);
   margin: 8px 12px;
 }
 

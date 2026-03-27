@@ -25,6 +25,16 @@
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 
+  /* Windows Theme Variables - Light (Default) */
+  --win-bg: #ffffff;
+  --win-header-bg: #ffffff;
+  --win-text: #333333;
+  --win-border: rgba(0, 0, 0, 0.2);
+  --win-header-border: #eeeeee;
+  --win-hover: rgba(0, 0, 0, 0.05);
+  --win-accent: #0078d4;
+  --win-glass-bg: rgba(243, 243, 243, 0.85);
+
   @media (max-width: 1024px) {
     font-size: 16px;
   }
@@ -48,6 +58,40 @@
   #social .button-icon {
     filter: invert(1) brightness(2);
   }
+
+  :root {
+    --win-bg: #1c1c1c;
+    --win-header-bg: #1c1c1c;
+    --win-text: #eeeeee;
+    --win-border: #333333;
+    --win-header-border: #333333;
+    --win-hover: rgba(255, 255, 255, 0.1);
+    --win-accent: #60cdff;
+    --win-glass-bg: rgba(28, 28, 28, 0.85);
+  }
+}
+
+/* Explicit theme classes for manual switching */
+.light {
+  --win-bg: #ffffff;
+  --win-header-bg: #ffffff;
+  --win-text: #333333;
+  --win-border: rgba(0, 0, 0, 0.2);
+  --win-header-border: #eeeeee;
+  --win-hover: rgba(0, 0, 0, 0.05);
+  --win-accent: #0078d4;
+  --win-glass-bg: rgba(243, 243, 243, 0.85);
+}
+
+.dark {
+  --win-bg: #1c1c1c;
+  --win-header-bg: #1c1c1c;
+  --win-text: #eeeeee;
+  --win-border: #333333;
+  --win-header-border: #333333;
+  --win-hover: rgba(255, 255, 255, 0.1);
+  --win-accent: #60cdff;
+  --win-glass-bg: rgba(28, 28, 28, 0.85);
 }
 
 body {

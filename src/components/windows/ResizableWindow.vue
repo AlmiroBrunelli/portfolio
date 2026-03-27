@@ -275,13 +275,14 @@ onUnmounted(() => {
 <style scoped>
 .resizable-window {
   position: absolute;
-  background: white;
+  background: var(--win-bg);
   display: flex;
   flex-direction: column;
   border-radius: 8px;
   box-shadow: 0 10px 40px rgba(0,0,0,0.3);
-  border: 1px solid rgba(0, 0, 0, 0.2);
+  border: 1px solid var(--win-border);
   overflow: visible; /* To see resizers better, but content should be clipped */
+  transition: background 0.2s, border-color 0.2s;
 }
 
 /* Apply transitions only when maximizing or restoring */
@@ -305,37 +306,12 @@ onUnmounted(() => {
   justify-content: space-between;
   align-items: center;
   padding-left: 12px;
-  background: #fff;
-  border-bottom: 1px solid #eee;
+  background: var(--win-header-bg);
+  border-bottom: 1px solid var(--win-header-border);
   border-top-left-radius: 8px;
   border-top-right-radius: 8px;
-  transition: background 0.2s, color 0.2s;
-}
-
-.dark .window-header {
-  background: #1c1c1c;
-  border-bottom: 1px solid #333;
-  color: #eee;
-}
-
-.dark.resizable-window {
-  border-color: #333;
-}
-
-.resizable-window.dark .window-title {
-  color: #eee;
-}
-
-.resizable-window.dark .control-btn {
-  color: #eee;
-}
-
-.resizable-window.dark .control-btn:hover {
-  background: rgba(255, 255, 255, 0.1);
-}
-
-.resizable-window.dark .control-btn img {
-  filter: invert(1);
+  transition: background 0.2s, color 0.2s, border-color 0.2s;
+  color: var(--win-text);
 }
 
 .maximized .window-header {
@@ -360,7 +336,7 @@ onUnmounted(() => {
 
 .window-title {
   font-size: 12px;
-  color: #333;
+  color: var(--win-text);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -383,7 +359,7 @@ onUnmounted(() => {
   height: 100%;
   background: transparent;
   border: none;
-  color: #333;
+  color: var(--win-text);
   cursor: pointer;
   display: flex;
   justify-content: center;
@@ -392,7 +368,7 @@ onUnmounted(() => {
   transition: background 0.2s;
 }
 
-.control-btn:hover { background: #eee; }
+.control-btn:hover { background: var(--win-hover); }
 .control-btn.close:hover { background: #e81123; color: white; }
 
 .window-content {

@@ -1,6 +1,7 @@
 <script setup>
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import { i18n } from '../../i18n'
+import { windowsState } from '../../store'
 import ResizableWindow from './ResizableWindow.vue'
 import ExplorerTopBar from './ExplorerTopBar.vue'
 import ExplorerSidebar from './ExplorerSidebar.vue'
@@ -124,7 +125,7 @@ onUnmounted(() => {
       v-if="isOpen && !isMinimized"
       :title="i18n.t('taskbar.explorer')"
       icon="📁"
-      :darkMode="false"
+      :darkMode="windowsState.theme === 'dark'"
       :showTitle="false"
       :showIcon="false"
       :initialSize="{ width: 1000, height: 650 }"
@@ -197,7 +198,7 @@ onUnmounted(() => {
   flex-direction: column;
   flex: 1;
   overflow: hidden;
-  background: #fff;
+  background: var(--win-bg);
 }
 
 .explorer-tabs {
@@ -211,7 +212,7 @@ onUnmounted(() => {
 
 .tab {
   height: 32px;
-  background: rgba(243, 243, 243, 0.8);
+  background: var(--win-hover);
   border-top-left-radius: 8px;
   border-top-right-radius: 8px;
   display: flex;
@@ -221,7 +222,8 @@ onUnmounted(() => {
   font-size: 11px;
   min-width: 140px;
   max-width: 200px;
-  color: #555;
+  color: var(--win-text);
+  opacity: 0.8;
   border: 1px solid transparent;
   border-bottom: none;
   cursor: pointer;
@@ -229,13 +231,14 @@ onUnmounted(() => {
 }
 
 .tab:hover {
-  background: #fdfdfd;
+  background: var(--win-hover);
 }
 
 .tab.active {
-  background: #fff;
-  border-color: #ddd;
-  color: #000;
+  background: var(--win-bg);
+  border-color: var(--win-border);
+  color: var(--win-text);
+  opacity: 1;
   box-shadow: 0 -2px 5px rgba(0,0,0,0.02);
 }
 
@@ -252,7 +255,7 @@ onUnmounted(() => {
 }
 
 .close-tab:hover {
-  background: rgba(0,0,0,0.1);
+  background: var(--win-hover);
 }
 
 .add-tab {
@@ -265,11 +268,11 @@ onUnmounted(() => {
   font-size: 18px;
   border-radius: 4px;
   margin-bottom: 2px;
-  color: #555;
+  color: var(--win-text);
 }
 
 .add-tab:hover {
-  background: rgba(0,0,0,0.05);
+  background: var(--win-hover);
 }
 
 .window-body {

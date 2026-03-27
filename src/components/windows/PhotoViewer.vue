@@ -1,10 +1,17 @@
-<script setup>
+<script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import ResizableWindow from './ResizableWindow.vue'
+import { windowsState } from '../../store'
+
+interface Photo {
+  path: string;
+  label?: string;
+  thumbnail?: string;
+}
 
 const props = defineProps({
   photos: {
-    type: Array,
+    type: Array as () => Photo[],
     default: () => []
   },
   initialIndex: {
@@ -28,7 +35,7 @@ const isZoomListVisible = ref(false)
 
 const zoomOptions = [800, 700, 600, 500, 400, 300, 200, 100, 75, 50, 25, 10]
 
-const currentPhoto = computed(() => props.photos[currentIndex.value] || {})
+const currentPhoto = computed(() => (props.photos[currentIndex.value] as Photo) || { path: '', label: '' })
 
 const next = () => {
     if (currentIndex.value < props.photos.length - 1) {
@@ -64,7 +71,7 @@ const zoomOut = () => {
   }
 }
 
-const handleWheel = (e) => {
+const handleWheel = (e: WheelEvent) => {
   if (e.ctrlKey) {
     e.preventDefault()
     if (e.deltaY < 0) zoomIn()
@@ -72,7 +79,7 @@ const handleWheel = (e) => {
   }
 }
 
-const handleKeydown = (e) => {
+const handleKeydown = (e: KeyboardEvent) => {
   if (e.key === 'ArrowLeft') prev()
   if (e.key === 'ArrowRight') next()
   if (e.key === 'Escape') emit('close')
@@ -98,13 +105,13 @@ watch(() => props.initialIndex, (newVal) => {
       v-if="isOpen"
       :title="`${currentPhoto.label || 'Foto'} - Fotos`"
       icon="🖼️"
-      :darkMode="true"
+      :darkMode="windowsState.theme === 'dark'"
       :initialSize="{ width: 900, height: 700 }"
       :initialPos="initialPos"
       :style="{ zIndex: zIndex }"
       @close="emit('close')"
       @minimize="emit('minimize')"
-      @maximize="val => { isMaximized = val; emit('maximize', val) }"
+      @maximize="(val: boolean) => { isMaximized = val; emit('maximize', val) }"
     >
       <div class="viewer-container" :class="{ maximized: isMaximized }">
         <div class="viewer-header-tools">
@@ -186,13 +193,13 @@ watch(() => props.initialIndex, (newVal) => {
   display: flex;
   flex-direction: column;
   flex: 1;
-  background: #1c1c1c;
+  background: var(--win-bg);
   overflow: hidden;
 }
 
 .viewer-header-tools {
   height: 40px;
-  background: #1c1c1c;
+  background: var(--win-bg);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -202,14 +209,14 @@ watch(() => props.initialIndex, (newVal) => {
 .tool-btn {
   background: transparent;
   border: none;
-  color: #fff;
+  color: var(--win-text);
   padding: 6px 12px;
   border-radius: 4px;
   cursor: pointer;
   font-size: 13px;
 }
 
-.tool-btn:hover { background: rgba(255, 255, 255, 0.1); }
+.tool-btn:hover { background: var(--win-hover); }
 
 .image-container {
   flex: 1;
@@ -261,7 +268,7 @@ watch(() => props.initialIndex, (newVal) => {
 
 .viewer-footer {
   height: 60px;
-  background: #1c1c1c;
+  background: var(--win-bg);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -274,13 +281,13 @@ watch(() => props.initialIndex, (newVal) => {
 .footer-tool-btn {
     background: transparent;
     border: none;
-    color: #fff;
+    color: var(--win-text);
     font-size: 18px;
     cursor: pointer;
     padding: 8px;
     border-radius: 4px;
 }
-.footer-tool-btn:hover { background: rgba(255, 255, 255, 0.1); }
+.footer-tool-btn:hover { background: var(--win-hover); }
 
 .filmstrip-container {
     flex: 2;
@@ -306,7 +313,7 @@ watch(() => props.initialIndex, (newVal) => {
 }
 
 .filmstrip-item.active {
-    border-color: #60cdff;
+    border-color: var(--win-accent);
     opacity: 1;
 }
 
@@ -330,8 +337,8 @@ watch(() => props.initialIndex, (newVal) => {
 
 .zoom-btn {
   background: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: #fff;
+  border: 1px solid var(--win-border);
+  color: var(--win-text);
   padding: 4px 10px;
   border-radius: 4px;
   font-size: 12px;
@@ -349,8 +356,8 @@ watch(() => props.initialIndex, (newVal) => {
   bottom: 100%;
   left: 0;
   width: 100%;
-  background: #2d2d2d;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--win-bg);
+  border: 1px solid var(--win-border);
   border-radius: 4px;
   margin-bottom: 8px;
   z-index: 100;
@@ -364,7 +371,7 @@ watch(() => props.initialIndex, (newVal) => {
   cursor: pointer;
 }
 
-.zoom-opt:hover { background: #60cdff; color: #000; }
+.zoom-opt:hover { background: var(--win-accent); color: #fff; }
 
 .slider-container {
   display: flex;
@@ -375,7 +382,7 @@ watch(() => props.initialIndex, (newVal) => {
 .zoom-step-btn {
   background: transparent;
   border: none;
-  color: #fff;
+  color: var(--win-text);
   font-size: 16px;
   cursor: pointer;
 }
@@ -383,7 +390,7 @@ watch(() => props.initialIndex, (newVal) => {
 .zoom-slider {
   width: 100px;
   height: 2px;
-  accent-color: #60cdff;
+  accent-color: var(--win-accent);
   cursor: pointer;
 }
 

@@ -1,6 +1,7 @@
-<script setup>
+<script setup lang="ts">
 import { ref } from 'vue'
 import ResizableWindow from './ResizableWindow.vue'
+import { windowsState } from '../../store'
 
 const props = defineProps({
   zIndex: Number,
@@ -14,8 +15,8 @@ const props = defineProps({
 const emit = defineEmits(['close', 'minimize', 'maximize'])
 
 const display = ref('0')
-const previousValue = ref(null)
-const operator = ref(null)
+const previousValue = ref<number | null>(null)
+const operator = ref<string | null>(null)
 const waitingForNextValue = ref(false)
 
 const clear = () => {
@@ -25,7 +26,7 @@ const clear = () => {
   waitingForNextValue.value = false
 }
 
-const inputDigit = (digit) => {
+const inputDigit = (digit: number) => {
   if (waitingForNextValue.value) {
     display.value = String(digit)
     waitingForNextValue.value = false
@@ -45,7 +46,7 @@ const inputDecimal = () => {
   }
 }
 
-const handleOperator = (nextOperator) => {
+const handleOperator = (nextOperator: string) => {
   const inputValue = parseFloat(display.value)
 
   if (operator.value && waitingForNextValue.value) {
@@ -65,7 +66,7 @@ const handleOperator = (nextOperator) => {
   operator.value = nextOperator
 }
 
-const calculate = (first, second, op) => {
+const calculate = (first: number, second: number, op: string) => {
   if (op === '+') return first + second
   if (op === '-') return first - second
   if (op === '*') return first * second
@@ -74,7 +75,7 @@ const calculate = (first, second, op) => {
 }
 
 const equals = () => {
-  if (!operator.value) return
+  if (!operator.value || previousValue.value === null) return
   const inputValue = parseFloat(display.value)
   const result = calculate(previousValue.value, inputValue, operator.value)
   display.value = String(result)
@@ -89,7 +90,7 @@ const equals = () => {
     title="Calculadora"
     icon="/src/assets/windows/calculator.png"
     iconType="image"
-    :darkMode="true"
+    :darkMode="windowsState.theme === 'dark'"
     :initialSize="{ width: 320, height: 500 }"
     :minWidth="280"
     :minHeight="400"
@@ -140,7 +141,7 @@ const equals = () => {
   display: flex;
   flex-direction: column;
   flex: 1;
-  background: rgba(32, 32, 32, 0.95);
+  background: var(--win-bg);
   padding: 4px;
 }
 
@@ -151,12 +152,13 @@ const equals = () => {
   justify-content: flex-end;
   align-items: flex-end;
   padding: 10px 16px;
-  color: #fff;
+  color: var(--win-text);
 }
 
 .history {
   font-size: 14px;
-  color: rgba(255, 255, 255, 0.6);
+  color: var(--win-text);
+  opacity: 0.6;
   min-height: 20px;
 }
 
@@ -181,26 +183,27 @@ const equals = () => {
 
 .key {
   height: 100%;
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--win-hover);
   border: none;
-  color: #fff;
+  color: var(--win-text);
   font-size: 18px;
   border-radius: 4px;
   cursor: pointer;
   transition: background 0.1s;
 }
 
-.key:hover { background: rgba(255, 255, 255, 0.1); }
-.key:active { background: rgba(255, 255, 255, 0.02); }
+.key:hover { background: var(--win-hover); }
+.key:active { opacity: 0.7; }
 
-.key.op { background: rgba(255, 255, 255, 0.08); font-size: 20px; }
-.key.op:hover { background: rgba(255, 255, 255, 0.15); }
+.key.op { background: var(--win-hover); opacity: 0.8; font-size: 20px; }
+.key.op:hover { background: var(--win-hover); }
 
 .key.equals {
-  background: #0078d4;
+  background: var(--win-accent);
+  color: #fff;
   grid-row: span 2;
 }
-.key.equals:hover { background: #0086ed; }
+.key.equals:hover { opacity: 0.9; }
 
 .key.zero { grid-column: span 2; }
 </style>

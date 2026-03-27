@@ -246,15 +246,16 @@ onUnmounted(() => {
 <style scoped>
 .taskbar {
   height: 48px;
-  background: rgba(28, 28, 28, 0.85);
+  background: v-bind('windowsState.theme === "dark" ? "rgba(28, 28, 28, 0.85)" : "rgba(243, 243, 243, 0.85)"');
   backdrop-filter: blur(20px);
   display: flex;
   justify-content: space-between;
   align-items: center;
   position: relative;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  border-top: 1px solid v-bind('windowsState.theme === "dark" ? "rgba(255, 255, 255, 0.1)" : "rgba(0, 0, 0, 0.1)"');
   z-index: 1000;
   padding: 0 4px;
+  color: v-bind('windowsState.theme === "dark" ? "#fff" : "#333"');
 }
 
 .taskbar-left {
@@ -350,8 +351,8 @@ onUnmounted(() => {
     margin: 0 2px;
 }
 
-.task-btn:hover { background: rgba(255, 255, 255, 0.1); }
-.task-btn.active { background: rgba(255, 255, 255, 0.15); }
+.task-btn:hover { background: v-bind('windowsState.theme === "dark" ? "rgba(255, 255, 255, 0.1)" : "rgba(0, 0, 0, 0.05)"'); }
+.task-btn.active { background: v-bind('windowsState.theme === "dark" ? "rgba(255, 255, 255, 0.15)" : "rgba(0, 0, 0, 0.1)"'); }
 /* No background for has-window unless active */
 
 .icon { font-size: 20px; }
@@ -389,7 +390,7 @@ onUnmounted(() => {
 }
 
 .tray-icons-group:hover, .tray-icons-group.active {
-    background: rgba(255, 255, 255, 0.1);
+    background: v-bind('windowsState.theme === "dark" ? "rgba(255, 255, 255, 0.1)" : "rgba(0, 0, 0, 0.05)"');
 }
 
 .tray-icons {
@@ -416,7 +417,7 @@ onUnmounted(() => {
     border-radius: 4px;
 }
 
-.clock-container:hover { background: rgba(255, 255, 255, 0.1); }
+.clock-container:hover { background: v-bind('windowsState.theme === "dark" ? "rgba(255, 255, 255, 0.1)" : "rgba(0, 0, 0, 0.05)"'); }
 
 .time { font-size: 11px; font-weight: 400; line-height: 1; }
 .date { font-size: 11px; font-weight: 400; line-height: 1; }
