@@ -24,14 +24,26 @@ export function useContextMenu() {
     isVisible.value = false
     
     // Position adjustments (to keep menu within viewport)
-    const menuWidth = 240 // estimated
-    const menuHeight = items.length * 32 + 20 // estimated
+    // We'll use more conservative estimates for the main menu
+    const menuWidth = 240
+    const menuHeight = items.length * 32 + 20
     
     let x = event.clientX
     let y = event.clientY
     
-    if (x + menuWidth > window.innerWidth) x -= menuWidth
-    if (y + menuHeight > window.innerHeight) y -= menuHeight
+    // Ensure menu doesn't go off the right edge (flip to left)
+    if (x + menuWidth > window.innerWidth) {
+      x -= menuWidth
+    }
+    
+    // Ensure menu doesn't go off the bottom edge (flip to top)
+    if (y + menuHeight > window.innerHeight) {
+      y -= menuHeight
+    }
+    
+    // Ensure menu doesn't go off the top/left edge (shift if still off-screen)
+    if (x < 10) x = 10
+    if (y < 10) y = 10
     
     position.x = x
     position.y = y

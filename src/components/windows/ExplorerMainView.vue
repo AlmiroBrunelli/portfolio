@@ -1,6 +1,7 @@
-<script setup>
-import { computed } from 'vue'
+<script setup lang="ts">
+import { ref, computed } from 'vue'
 import { i18n } from '../../i18n'
+import { useContextMenu, type ContextMenuItem } from '../../utils/useContextMenu'
 
 const props = defineProps({
   currentPath: String,
@@ -13,55 +14,103 @@ const props = defineProps({
 
 const emit = defineEmits(['navigate', 'open-file'])
 
-const rootItems = [
+const { showMenu } = useContextMenu()
+
+interface ExplorerItem {
+  label: string;
+  icon?: string;
+  type?: 'folder' | 'txt' | 'image' | 'pdf';
+  path?: string;
+  thumbnail?: string;
+  labelText?: string;
+  internalName?: string;
+}
+
+const rootItems = ref<ExplorerItem[]>([
   { label: 'explorer.projects', icon: '/src/assets/windows/project.png', internalName: 'projects' },
   { label: 'explorer.resume', icon: '/src/assets/windows/pdf.svg', type: 'pdf', path: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf', labelText: 'Currículo.pdf' },
   { label: 'explorer.links', icon: '🌐', internalName: 'links' },
   { label: 'explorer.certificates', icon: '🏆', internalName: 'certificates' },
   { label: 'explorer.blog', icon: '📝', internalName: 'blog' }
-]
+])
 
-const documentItems = [
+const documentItems = ref<ExplorerItem[]>([
   { label: 'Curriculum_Vitae.pdf', icon: '/src/assets/windows/pdf.svg', type: 'pdf', path: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf' },
   { label: 'Project_Proposal.pdf', icon: '/src/assets/windows/pdf.svg', type: 'pdf', path: 'https://pdfobject.com/pdf/sample.pdf' }
-]
+])
 
-const imageItems = [
+const imageItems = ref<ExplorerItem[]>([
   { label: 'windows-wallpaper.png', icon: '🖼️', type: 'image', path: '/src/assets/windows/windows-wallpaper.png', thumbnail: '/src/assets/windows/windows-wallpaper.png' },
   { label: 'hero.png', icon: '🖼️', type: 'image', path: '/src/assets/hero.png', thumbnail: '/src/assets/hero.png' },
   { label: 'background_1.jpg', icon: '🖼️', type: 'image', path: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b', thumbnail: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=200&h=200&fit=crop' },
   { label: 'background_2.jpg', icon: '🖼️', type: 'image', path: 'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05', thumbnail: 'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=200&h=200&fit=crop' }
-]
+])
 
 const displayItems = computed(() => {
-  let items = []
-  if (props.currentPath === 'pictures') items = imageItems
-  else if (props.currentPath === 'documents') items = documentItems
-  else if (props.currentPath === 'quick_access') items = rootItems
-  else return [] // Empty for other folders for now
+  let items: ExplorerItem[] = []
+  if (props.currentPath === 'pictures') items = imageItems.value
+  else if (props.currentPath === 'documents') items = documentItems.value
+  else if (props.currentPath === 'quick_access' || props.currentPath === 'this_pc') items = rootItems.value
+  else return []
 
   if (props.searchQuery) {
     const query = props.searchQuery.toLowerCase()
-    return items.filter(item => item.label.toLowerCase().includes(query))
+    return items.filter(item => {
+      const trans = i18n.t(item.label)
+      const labelText = item.labelText || (trans !== item.label ? trans : item.label)
+      return labelText.toLowerCase().includes(query)
+    })
   }
 
   return items
 })
 
-const handleItemClick = (item) => {
+const handleCreateNew = (type: 'folder' | 'txt') => {
+  const currentList = props.currentPath === 'pictures' ? imageItems.value :
+                   props.currentPath === 'documents' ? documentItems.value :
+                   rootItems.value
+                   
+  const count = currentList.filter(item => item.label.includes(type === 'folder' ? 'Nova Pasta' : 'Novo Arquivo')).length
+  const label = type === 'folder' 
+    ? `Nova Pasta${count > 0 ? ` (${count})` : ''}`
+    : `Novo Arquivo de Texto${count > 0 ? ` (${count})` : ''}.txt`
+
+  currentList.push({
+    label,
+    icon: type === 'folder' ? '📁' : '📄',
+    type: type,
+    path: '#' // placeholder
+  })
+}
+
+const handleContextMenu = (e: MouseEvent) => {
+  const items: ContextMenuItem[] = [
+    { 
+      label: 'Novo', 
+      icon: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.2"><circle cx="8" cy="8" r="6"/><path d="M8 5v6M5 8h6"/></svg>',
+      submenu: [
+        { label: 'Pasta', action: () => handleCreateNew('folder') },
+        { label: 'Documento de Texto', action: () => handleCreateNew('txt') }
+      ]
+    }
+  ]
+  showMenu(e, items)
+}
+
+const handleItemClick = (item: ExplorerItem) => {
     if (item.type === 'image') {
-        const index = imageItems.findIndex(i => i.path === item.path)
-        emit('open-file', { type: 'image', path: item.path, list: imageItems, index })
+        const index = imageItems.value.findIndex(i => i.path === item.path)
+        emit('open-file', { type: 'image', path: item.path, list: imageItems.value, index })
     } else if (item.type === 'pdf') {
         emit('open-file', { type: 'pdf', path: item.path, label: item.labelText || item.label })
-    } else {
+    } else if (item.internalName) {
         emit('navigate', item.internalName)
     }
 }
 </script>
 
 <template>
-  <div class="main-view" :class="{ compact: compact }">
+  <div class="main-view" :class="{ compact: compact }" @contextmenu.stop.prevent="handleContextMenu">
     <div class="content-header">
       <h2 class="section-title">{{ i18n.t(`explorer.${currentPath}`) || currentPath }}</h2>
     </div>

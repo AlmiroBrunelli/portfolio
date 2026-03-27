@@ -31,6 +31,32 @@ const focusedApp = ref<string | null>('Explorer')
 
 const { showMenu } = useContextMenu()
 
+// Desktop Items State
+interface DesktopItem {
+  id: string;
+  label: string;
+  type: 'folder' | 'txt';
+  icon?: string;
+}
+
+const desktopItems = ref<DesktopItem[]>([
+  { id: 'pc', label: 'Este Computador', type: 'folder', icon: 'pc.svg' },
+  { id: 'trash', label: 'Lixeira', type: 'folder' }
+])
+
+const handleCreateNew = (type: 'folder' | 'txt') => {
+  const count = desktopItems.value.filter(item => item.type === type).length
+  const label = type === 'folder' 
+    ? `Nova Pasta${count > 0 ? ` (${count})` : ''}`
+    : `Novo Arquivo de Texto${count > 0 ? ` (${count})` : ''}.txt`
+    
+  desktopItems.value.push({
+    id: `item-${Date.now()}`,
+    label,
+    type
+  })
+}
+
 const handleDesktopContextMenu = (e: MouseEvent) => {
   const items: ContextMenuItem[] = [
     { 
@@ -68,10 +94,10 @@ const handleDesktopContextMenu = (e: MouseEvent) => {
       label: 'Novo', 
       icon: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.2"><circle cx="8" cy="8" r="6"/><path d="M8 5v6M5 8h6"/></svg>',
       submenu: [
-        { label: 'Pasta' },
+        { label: 'Pasta', action: () => handleCreateNew('folder') },
         { label: 'Atalho' },
         { divider: true },
-        { label: 'Documento de Texto' }
+        { label: 'Documento de Texto', action: () => handleCreateNew('txt') }
       ]
     },
     { divider: true },
@@ -263,6 +289,12 @@ const toggleStartMenu = () => {
     isStartMenuOpen.value = !isStartMenuOpen.value
 }
 
+const handleOpenItem = (item: DesktopItem) => {
+  if (item.type === 'folder' || item.id === 'pc') {
+    toggleExplorer()
+  }
+}
+
 const closeExplorer = () => {
   isExplorerOpen.value = false
   isExplorerMinimized.value = false
@@ -300,6 +332,21 @@ onMounted(() => {
   <div class="windows-container" :class="windowsState.theme">
     <!-- Desktop Area -->
     <div class="desktop" @contextmenu.prevent="handleDesktopContextMenu">
+      <div class="desktop-icons">
+        <div 
+          v-for="item in desktopItems" 
+          :key="item.id"
+          class="desktop-icon"
+          @dblclick="handleOpenItem(item)"
+        >
+          <div class="icon-wrapper">
+             <img v-if="item.icon" :src="`/src/assets/windows/${item.icon}`" width="48" height="48" draggable="false" />
+             <span v-else-if="item.type === 'folder'" class="emoji-icon">📁</span>
+             <span v-else class="emoji-icon">📄</span>
+          </div>
+          <span class="label">{{ item.label }}</span>
+        </div>
+      </div>
       <ExplorerWindow 
         :isOpen="isExplorerOpen"
         :isMinimized="isExplorerMinimized"
@@ -445,6 +492,65 @@ onMounted(() => {
   flex: 1;
   position: relative;
   width: 100%;
+}
+
+.desktop-icons {
+  position: absolute;
+  top: 0;
+  left: 0;
+  padding: 10px;
+  display: grid;
+  grid-template-rows: repeat(auto-fill, 100px);
+  grid-auto-flow: column;
+  gap: 10px;
+  height: 100%;
+  pointer-events: none;
+}
+
+.desktop-icon {
+  width: 80px;
+  height: 100px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 5px;
+  border-radius: 4px;
+  cursor: default;
+  pointer-events: auto;
+  transition: background 0.2s;
+  border: 1px solid transparent;
+  user-select: none;
+}
+
+.desktop-icon:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.icon-wrapper {
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 5px;
+}
+
+.emoji-icon {
+  font-size: 40px;
+}
+
+.label {
+  font-size: 12px;
+  color: white;
+  text-align: center;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  word-break: break-all;
 }
 </style>
 

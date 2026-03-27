@@ -216,6 +216,7 @@ onUnmounted(() => {
     class="resizable-window" 
     :style="windowStyle"
     :class="{ maximized: isMaximized, inactive: !active, dark: darkMode, animating: isAnimating }"
+    @contextmenu.stop
   >
     <!-- Resize Handles -->
     <template v-if="!isMaximized">

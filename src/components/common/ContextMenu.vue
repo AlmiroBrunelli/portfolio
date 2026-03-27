@@ -1,10 +1,55 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted, watch } from 'vue'
 import { useContextMenu, type ContextMenuItem } from '../../utils/useContextMenu'
 import { windowsState } from '../../store'
 
 const { isVisible, position, menuItems, hideMenu } = useContextMenu()
 const activeSubmenu = ref<number | null>(null)
+const menuRef = ref<HTMLElement | null>(null)
+
+// Reset active submenu when menu visibility changes
+watch(isVisible, (newVal) => {
+  if (newVal) {
+    activeSubmenu.value = null
+  }
+})
+
+// Computed style for submenu direction
+const getSubmenuStyle = (index: number) => {
+  if (!menuRef.value) return {}
+  
+  const rect = menuRef.value.getBoundingClientRect()
+  const screenWidth = window.innerWidth
+  const screenHeight = window.innerHeight
+  
+  // Estimate submenu dimensions
+  const submenuWidth = 200
+  const submenuHeight = 150 // estimated, can be improved
+  
+  const style: any = {}
+  
+  // Horizontal positioning
+  if (rect.right + submenuWidth > screenWidth) {
+    style.left = 'auto'
+    style.right = 'calc(100% + 4px)'
+  } else {
+    style.left = 'calc(100% + 4px)'
+    style.right = 'auto'
+  }
+  
+  // Vertical positioning (simplified check)
+  // We can also check if it would overflow the bottom
+  const itemTop = rect.top + (index * 32) // estimation of item position
+  if (itemTop + submenuHeight > screenHeight) {
+    style.top = 'auto'
+    style.bottom = '-4px'
+  } else {
+    style.top = '-4px'
+    style.bottom = 'auto'
+  }
+  
+  return style
+}
 
 const handleItemClick = (item: ContextMenuItem) => {
   if ('divider' in item && item.divider) return
@@ -40,6 +85,7 @@ onUnmounted(() => {
   <Transition name="fade">
     <div 
       v-if="isVisible" 
+      ref="menuRef"
       class="context-menu"
       :style="{ top: `${position.y}px`, left: `${position.x}px` }"
       @contextmenu.prevent
@@ -70,7 +116,7 @@ onUnmounted(() => {
             </div>
 
             <!-- Submenu (Simplified for now, can be expanded if needed) -->
-            <div v-if="'submenu' in item && item.submenu && activeSubmenu === index" class="submenu">
+            <div v-if="'submenu' in item && item.submenu && activeSubmenu === index" class="submenu" :style="getSubmenuStyle(index)">
                <div class="menu-items">
                  <div 
                   v-for="(sub, sIdx) in item.submenu" 
