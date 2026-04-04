@@ -27,7 +27,7 @@ export default {
   },
   explorer: {
     this_pc: 'Este Computador',
-    quick_access: 'Acesso rápido',
+    home: 'Início',
     documents: 'Documentos',
     pictures: 'Imagens',
     network: 'Rede',
@@ -43,7 +43,8 @@ export default {
     resume: 'Currículo',
     links: 'Links',
     certificates: 'Certificados',
-    blog: 'Blog'
+    blog: 'Blog',
+    local_disk: 'Disco Local (C:)'
   },
   languages: {
     pt: 'Português (Brasil)',

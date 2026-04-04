@@ -15,7 +15,7 @@ const props = defineProps({
   isOpen: Boolean,
   zIndex: Number,
   initialPos: {
-    type: Object,
+    type: Object as () => { x: number, y: number } | null,
     default: null
   }
 })

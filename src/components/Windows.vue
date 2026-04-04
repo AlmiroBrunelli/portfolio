@@ -12,6 +12,7 @@ import ResizableWindow from './windows/ResizableWindow.vue'
 import ContextMenu from './common/ContextMenu.vue'
 import { windowsState } from '../store'
 import { useContextMenu, type ContextMenuItem } from '../utils/useContextMenu'
+import type { Photo, ExplorerItem } from '../types'
 
 const isExplorerOpen = ref(true)
 const isExplorerMinimized = ref(false)
@@ -23,10 +24,11 @@ const isEdgeMinimized = ref(false)
 const isPersonalizationOpen = ref(false)
 const personalizationPos = ref<{x: number, y: number} | null>(null)
 const openedPhoto = ref<string | null>(null)
-const photoList = ref<string[]>([])
+const photoList = ref<Photo[]>([])
 const photoIndex = ref(0)
 const isPhotoViewerMinimized = ref(false)
-const explorerPath = ref('Este Computador')
+const explorerPath = ref('this_pc')
+const targetExplorerPath = ref({ path: 'this_pc', timestamp: Date.now() })
 const focusedApp = ref<string | null>('Explorer')
 
 const { showMenu } = useContextMenu()
@@ -40,7 +42,7 @@ interface DesktopItem {
 }
 
 const desktopItems = ref<DesktopItem[]>([
-  { id: 'pc', label: 'Este Computador', type: 'folder', icon: 'pc.svg' },
+  { id: 'pc', label: 'Este Computador', type: 'folder', icon: 'pc.png' },
   { id: 'trash', label: 'Lixeira', type: 'folder' }
 ])
 
@@ -270,7 +272,11 @@ const togglePdfReader = () => {
 
 const emit = defineEmits(['change-os'])
 
-const toggleExplorer = () => {
+const toggleExplorer = (path?: string) => {
+  if (path) {
+    targetExplorerPath.value = { path, timestamp: Date.now() }
+  }
+  
   if (!isExplorerOpen.value) {
     explorerPos.value = getNextCascadePos(1000, 650)
     isExplorerOpen.value = true
@@ -278,6 +284,9 @@ const toggleExplorer = () => {
     bringToFront('Explorer')
   } else if (focusedApp.value !== 'Explorer' || isExplorerMinimized.value) {
     isExplorerMinimized.value = false
+    bringToFront('Explorer')
+  } else if (path && targetExplorerPath.value.path !== explorerPath.value) {
+    // Just path update needed if already open and focused
     bringToFront('Explorer')
   } else {
     isExplorerMinimized.value = true
@@ -290,8 +299,10 @@ const toggleStartMenu = () => {
 }
 
 const handleOpenItem = (item: DesktopItem) => {
-  if (item.type === 'folder' || item.id === 'pc') {
-    toggleExplorer()
+  if (item.id === 'pc') {
+    toggleExplorer('this_pc')
+  } else if (item.type === 'folder') {
+    toggleExplorer('home')
   }
 }
 
@@ -306,11 +317,11 @@ const minimizeExplorer = () => {
   findNewFocus()
 }
 
-const handleOpenFile = (data: { type: string, path: string, list?: string[], index?: number, label?: string }) => {
+const handleOpenFile = (data: { type: string, path: string, list?: Photo[] | ExplorerItem[], index?: number, label?: string }) => {
   if (data.type === 'image') {
     if (!openedPhoto.value) photoViewerPos.value = getNextCascadePos(900, 700)
     openedPhoto.value = data.path
-    photoList.value = data.list || []
+    photoList.value = (data.list as Photo[]) || []
     photoIndex.value = data.index || 0
     isPhotoViewerMinimized.value = false
     bringToFront('PhotoViewer')
@@ -352,6 +363,7 @@ onMounted(() => {
         :isMinimized="isExplorerMinimized"
         :zIndex="zIndices.Explorer"
         :initialPos="explorerPos"
+        :path="targetExplorerPath"
         @close="closeExplorer"
         @minimize="minimizeExplorer"
         @maximize="bringToFront('Explorer')"
@@ -548,6 +560,7 @@ onMounted(() => {
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
   display: -webkit-box;
   -webkit-line-clamp: 2;
+  line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
   word-break: break-all;

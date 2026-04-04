@@ -2,6 +2,7 @@
 import { ref, computed } from 'vue'
 import { i18n } from '../../i18n'
 import { useContextMenu, type ContextMenuItem } from '../../utils/useContextMenu'
+import type { ExplorerItem, Photo } from '../../types'
 
 const props = defineProps({
   currentPath: String,
@@ -16,22 +17,18 @@ const emit = defineEmits(['navigate', 'open-file'])
 
 const { showMenu } = useContextMenu()
 
-interface ExplorerItem {
-  label: string;
-  icon?: string;
-  type?: 'folder' | 'txt' | 'image' | 'pdf';
-  path?: string;
-  thumbnail?: string;
-  labelText?: string;
-  internalName?: string;
-}
-
 const rootItems = ref<ExplorerItem[]>([
+  { label: 'explorer.documents', icon: '📁', internalName: 'documents' },
+  { label: 'explorer.pictures', icon: '🖼️', internalName: 'pictures' },
   { label: 'explorer.projects', icon: '/src/assets/windows/project.png', internalName: 'projects' },
   { label: 'explorer.resume', icon: '/src/assets/windows/pdf.svg', type: 'pdf', path: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf', labelText: 'Currículo.pdf' },
-  { label: 'explorer.links', icon: '🌐', internalName: 'links' },
+  { label: 'explorer.links', icon: '/src/assets/windows/network.png', internalName: 'links' },
   { label: 'explorer.certificates', icon: '🏆', internalName: 'certificates' },
   { label: 'explorer.blog', icon: '📝', internalName: 'blog' }
+])
+
+const pcItems = ref<ExplorerItem[]>([
+  { label: 'explorer.local_disk', icon: '/src/assets/windows/drive.png', internalName: 'local_disk', labelText: 'Disco Local (C:)' }
 ])
 
 const documentItems = ref<ExplorerItem[]>([
@@ -50,7 +47,8 @@ const displayItems = computed(() => {
   let items: ExplorerItem[] = []
   if (props.currentPath === 'pictures') items = imageItems.value
   else if (props.currentPath === 'documents') items = documentItems.value
-  else if (props.currentPath === 'quick_access' || props.currentPath === 'this_pc') items = rootItems.value
+  else if (props.currentPath === 'home') items = rootItems.value
+  else if (props.currentPath === 'this_pc') items = pcItems.value
   else return []
 
   if (props.searchQuery) {
@@ -98,10 +96,10 @@ const handleContextMenu = (e: MouseEvent) => {
 }
 
 const handleItemClick = (item: ExplorerItem) => {
-    if (item.type === 'image') {
+    if (item.type === 'image' && item.path) {
         const index = imageItems.value.findIndex(i => i.path === item.path)
-        emit('open-file', { type: 'image', path: item.path, list: imageItems.value, index })
-    } else if (item.type === 'pdf') {
+        emit('open-file', { type: 'image', path: item.path, list: imageItems.value as Photo[], index })
+    } else if (item.type === 'pdf' && item.path) {
         emit('open-file', { type: 'pdf', path: item.path, label: item.labelText || item.label })
     } else if (item.internalName) {
         emit('navigate', item.internalName)

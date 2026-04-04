@@ -2,12 +2,7 @@
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import ResizableWindow from './ResizableWindow.vue'
 import { windowsState } from '../../store'
-
-interface Photo {
-  path: string;
-  label?: string;
-  thumbnail?: string;
-}
+import type { Photo } from '../../types'
 
 const props = defineProps({
   photos: {
@@ -21,7 +16,7 @@ const props = defineProps({
   isOpen: Boolean,
   zIndex: Number,
   initialPos: {
-    type: Object,
+    type: Object as () => { x: number, y: number } | null,
     default: null
   }
 })

@@ -7,7 +7,7 @@ const props = defineProps({
   zIndex: Number,
   isMinimized: Boolean,
   initialPos: {
-    type: Object,
+    type: Object as () => { x: number, y: number } | null,
     default: null
   }
 })

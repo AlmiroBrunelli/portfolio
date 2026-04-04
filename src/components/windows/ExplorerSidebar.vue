@@ -7,10 +7,10 @@ defineProps({
 const emit = defineEmits(['navigate'])
 
 const navItems = [
-  { label: 'explorer.quick_access', icon: '⭐', internalName: 'quick_access' },
-  { label: 'explorer.onedrive', icon: '☁️', internalName: 'onedrive' },
-  { label: 'explorer.this_pc', icon: '/src/assets/windows/pc.svg', internalName: 'this_pc', isImage: true },
-  { label: 'explorer.network', icon: '🌐', internalName: 'network' }
+  { label: 'explorer.home', icon: '/src/assets/windows/home.png', internalName: 'home', isImage: true },
+  { label: 'explorer.onedrive', icon: '/src/assets/windows/onedrive.png', internalName: 'onedrive', isImage: true },
+  { label: 'explorer.this_pc', icon: '/src/assets/windows/pc.png', internalName: 'this_pc', isImage: true },
+  { label: 'explorer.network', icon: '/src/assets/windows/network.png', internalName: 'network', isImage: true }
 ]
 </script>
 
@@ -37,7 +37,9 @@ const navItems = [
         :class="{ active: currentPath === 'documents' }"
         @click="emit('navigate', 'documents')"
       >
-        <span class="icon">📁</span>
+        <span class="icon">
+          <img src="/src/assets/windows/documents.png" width="16" height="16" style="display: block" />
+        </span>
         <span class="label">{{ i18n.t('explorer.documents') }}</span>
       </div>
       <div 

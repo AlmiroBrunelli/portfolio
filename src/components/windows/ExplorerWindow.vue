@@ -14,6 +14,10 @@ const props = defineProps({
   initialPos: {
     type: Object,
     default: null
+  },
+  path: {
+    type: Object,
+    default: () => ({ path: 'this_pc' })
   }
 })
 
@@ -38,6 +42,12 @@ const activeTab = computed(() => tabs.value.find(t => t.id === activeTabId.value
 watch(() => activeTab.value?.path, (newPath) => {
   if (newPath) emit('update-path', newPath)
 }, { immediate: true })
+
+watch(() => props.path, (newVal) => {
+  if (newVal?.path) {
+    navigateTo(newVal.path)
+  }
+}, { deep: true })
 
 const canGoBack = computed(() => activeTab.value.historyIndex > 0)
 const canGoForward = computed(() => activeTab.value.historyIndex < activeTab.value.history.length - 1)
@@ -146,9 +156,11 @@ onUnmounted(() => {
             @auxclick.prevent.stop="e => { if (e.button === 1) closeTab(tab.id) }"
           >
             <span class="icon">
-              <img v-if="tab.path === 'this_pc'" src="../../assets/windows/pc.svg" width="16" height="16" style="display: block" />
+              <img v-if="tab.path === 'this_pc'" src="../../assets/windows/pc.png" width="16" height="16" style="display: block" />
+              <img v-else-if="tab.path === 'onedrive'" src="../../assets/windows/onedrive.png" width="16" height="16" style="display: block" />
+              <img v-else-if="tab.path === 'home'" src="../../assets/windows/home.png" width="16" height="16" style="display: block" />
               <template v-else>
-                {{ tab.path === 'pictures' ? '🖼️' : tab.path === 'documents' ? '📄' : tab.path === 'onedrive' ? '☁️' : '🏠' }}
+                {{ tab.path === 'pictures' ? '🖼️' : tab.path === 'documents' ? '📄' : '🏠' }}
               </template>
             </span>
             <span class="label">{{ i18n.t(`explorer.${tab.path}`) || tab.path }}</span>
