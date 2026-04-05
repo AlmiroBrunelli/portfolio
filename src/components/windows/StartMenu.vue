@@ -21,7 +21,7 @@ const pinnedApps = [
 ]
 
 const recommendedFiles = [
-  { name: 'resume-pt.pdf', time: 'Há pouco tempo' },
+  { name: '2026-03 - Currículo - Almiro Brunelli Neto.pdf', time: 'Há pouco tempo' },
   { name: 'index.html', time: 'Há 2 horas' },
   { name: 'portfolio_plan.pdf', time: 'Ontem às 14:30' }
 ]

@@ -35,6 +35,25 @@ const printPdf = () => {
   // We'll try a generic print if possible or let the browser handle it
   window.print()
 }
+
+const downloadPdf = () => {
+  const link = document.createElement('a');
+  link.href = props.src;
+  
+  // Extract filename from the source path
+  // Example: "/assets/resume/resume-pt.pdf" -> "resume-pt.pdf"
+  let filename = props.src.split('/').pop()?.split('#')[0].split('?')[0] || props.label;
+  
+  // Ensure it has .pdf extension
+  if (!filename.toLowerCase().endsWith('.pdf')) {
+    filename += '.pdf';
+  }
+  
+  link.download = decodeURIComponent(filename);
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
 </script>
 
 <template>
@@ -97,7 +116,7 @@ const printPdf = () => {
                 <polyline points="6 9 6 2 18 2 18 9" /><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" /><rect x="6" y="14" width="12" height="8" />
               </svg>
             </button>
-            <button class="toolbar-btn" title="Salvar">
+            <button class="toolbar-btn" @click="downloadPdf" title="Salvar">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" /><polyline points="17 21 17 13 7 13 7 21" /><polyline points="7 3 7 8 15 8" />
               </svg>

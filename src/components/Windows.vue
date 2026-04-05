@@ -154,8 +154,8 @@ const isPdfReaderMinimized = ref(false)
 
 const toggleResume = () => {
   const path = locale.value === 'en-US' 
-    ? '/assets/resume/resume-en.pdf' 
-    : '/assets/resume/resume-pt.pdf'
+    ? '/assets/resume/2026-03 - Resume - Almiro Brunelli Neto.pdf' 
+    : '/assets/resume/2026-03 - Currículo - Almiro Brunelli Neto.pdf'
   
   handleOpenFile({ 
     type: 'pdf', 

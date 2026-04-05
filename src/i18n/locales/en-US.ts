@@ -43,7 +43,7 @@ export default {
     search_in: 'Search in ',
     clear_search: 'Clear search',
     projects: 'Projects',
-    resume: 'Resume',
+    resume: '2026-03 - Resume - Almiro Brunelli Neto',
     links: 'Links',
     certificates: 'Certificates',
     blog: 'Blog',

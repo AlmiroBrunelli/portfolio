@@ -6,7 +6,7 @@ const emit = defineEmits(['open-pdf', 'open-app'])
 
 const openOriginalPdf = () => {
   // We only have the real PDF for PT for now
-  const path = '/assets/resume/resume-pt.pdf'
+  const path = '/assets/resume/2026-03 - Currículo - Almiro Brunelli Neto.pdf'
   emit('open-pdf', { 
     type: 'pdf', 
     path, 
