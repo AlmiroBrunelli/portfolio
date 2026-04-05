@@ -31,10 +31,9 @@ const pdfUrl = computed(() => {
 })
 
 const printPdf = () => {
-  const iframe = document.getElementById('pdf-iframe') as HTMLIFrameElement
-  if (iframe && iframe.contentWindow) {
-    iframe.contentWindow.print()
-  }
+  // Printing embed objects is browser-dependent, usually done via browser UI
+  // We'll try a generic print if possible or let the browser handle it
+  window.print()
 }
 </script>
 
@@ -108,12 +107,11 @@ const printPdf = () => {
 
         <!-- PDF Content Area -->
         <div class="pdf-content">
-          <iframe 
-            id="pdf-iframe"
+          <embed 
             :src="pdfUrl" 
-            class="pdf-iframe" 
-            frameborder="0"
-          ></iframe>
+            type="application/pdf"
+            class="pdf-view" 
+          />
         </div>
       </div>
     </ResizableWindow>
@@ -208,7 +206,7 @@ const printPdf = () => {
   overflow: hidden;
 }
 
-.pdf-iframe {
+.pdf-view {
   width: 100%;
   height: 100%;
   border: none;

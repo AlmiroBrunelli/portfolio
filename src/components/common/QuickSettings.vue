@@ -5,6 +5,7 @@ import SoundIcon from './SoundIcon.vue'
 import BrightnessIcon from './BrightnessIcon.vue'
 import { computed } from 'vue'
 import { playVolumeSound } from '../../utils/audio.ts'
+import { i18n } from '../../i18n'
 
 const props = defineProps<{
   isOpen: boolean
@@ -143,7 +144,7 @@ const batteryPercentage = computed(() => Math.round(batteryLevel.value * 100))
               <!-- Battery Level Fill -->
               <g v-if="batteryLevel >= 0.1">
                 <rect v-if="batteryLevel < 0.2" x="5" y="10" width="2" height="6" fill="#ff4d4d" />
-                <template v-else-if="batteryLevel < 0.4">
+                <template v-else-if="batteryLevel < 0.2">
                   <rect x="5" y="10" width="2" height="6" fill="currentColor" />
                   <rect x="8" y="10" width="2" height="6" fill="currentColor" />
                 </template>
@@ -173,6 +174,11 @@ const batteryPercentage = computed(() => Math.round(batteryLevel.value * 100))
               </g>
             </svg>
             <span>{{ batteryPercentage }}%</span>
+          </div>
+        </div>
+        <div class="footer-right">
+          <div class="footer-icon-btn" :title="i18n.t('quick_settings.settings')">
+            <img src="/src/assets/windows/settings.png" width="16" height="16" />
           </div>
         </div>
       </div>
@@ -270,6 +276,21 @@ const batteryPercentage = computed(() => Math.round(batteryLevel.value * 100))
   justify-content: space-between;
   align-items: center;
   border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.footer-icon-btn {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.1s;
+}
+
+.footer-icon-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
 }
 
 .battery-status {

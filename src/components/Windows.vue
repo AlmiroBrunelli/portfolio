@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref } from 'vue'
+import { useI18n } from '../i18n'
 import ExplorerWindow from './windows/ExplorerWindow.vue'
 import Taskbar from './windows/Taskbar.vue'
 import StartMenu from './windows/StartMenu.vue'
@@ -31,6 +32,8 @@ const explorerPath = ref('this_pc')
 const targetExplorerPath = ref({ path: 'this_pc', timestamp: Date.now() })
 const focusedApp = ref<string | null>('Explorer')
 
+const { t, locale } = useI18n()
+
 const { showMenu } = useContextMenu()
 
 // Desktop Items State
@@ -43,7 +46,8 @@ interface DesktopItem {
 
 const desktopItems = ref<DesktopItem[]>([
   { id: 'pc', label: 'Este Computador', type: 'folder', icon: 'pc.png' },
-  { id: 'trash', label: 'Lixeira', type: 'folder' }
+  { id: 'resume', label: 'Currículo', type: 'folder', icon: 'resume.png' },
+  { id: 'trash', label: 'Lixeira', type: 'folder', icon: 'trash.png' }
 ])
 
 const handleCreateNew = (type: 'folder' | 'txt') => {
@@ -147,6 +151,18 @@ const getNextCascadePos = (winWidth: number, winHeight: number) => {
 const openedPdf = ref<string | null>(null)
 const pdfLabel = ref('')
 const isPdfReaderMinimized = ref(false)
+
+const toggleResume = () => {
+  const path = locale.value === 'en-US' 
+    ? '/assets/resume/resume-en.pdf' 
+    : '/assets/resume/resume-pt.pdf'
+  
+  handleOpenFile({ 
+    type: 'pdf', 
+    path, 
+    label: t('explorer.resume') 
+  })
+}
 
 const togglePersonalization = () => {
   if (!isPersonalizationOpen.value) {
@@ -301,6 +317,8 @@ const toggleStartMenu = () => {
 const handleOpenItem = (item: DesktopItem) => {
   if (item.id === 'pc') {
     toggleExplorer('this_pc')
+  } else if (item.id === 'resume') {
+    toggleResume()
   } else if (item.type === 'folder') {
     toggleExplorer('home')
   }
@@ -334,9 +352,9 @@ const handleOpenFile = (data: { type: string, path: string, list?: Photo[] | Exp
   }
 }
 
-onMounted(() => {
-  // Any global initialization
-})
+const handleOpenApplication = (appName: string) => {
+  if (appName === 'resume') toggleResume()
+}
 </script>
 
 <template>
@@ -368,6 +386,7 @@ onMounted(() => {
         @minimize="minimizeExplorer"
         @maximize="bringToFront('Explorer')"
         @open-file="handleOpenFile"
+        @open-app="handleOpenApplication"
         @update-path="(path: string) => explorerPath = path"
         @mousedown="bringToFront('Explorer')"
       />
@@ -381,6 +400,7 @@ onMounted(() => {
         @open-app="(app: string) => { 
           if (app === 'Calculator') toggleCalculator(); 
           if (app === 'Edge') toggleEdge();
+          if (app === 'resume') toggleResume();
           isStartMenuOpen = false;
         }"
       />
@@ -457,6 +477,7 @@ onMounted(() => {
       >
         <Personalization />
       </ResizableWindow>
+
     </div>
 
     <!-- Taskbar -->
@@ -566,6 +587,3 @@ onMounted(() => {
   word-break: break-all;
 }
 </style>
-
-
-

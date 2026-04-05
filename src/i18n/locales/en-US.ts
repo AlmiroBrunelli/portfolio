@@ -30,6 +30,9 @@ export default {
     home: 'Home',
     documents: 'Documents',
     pictures: 'Pictures',
+    music: 'Music',
+    videos: 'Videos',
+    downloads: 'Downloads',
     network: 'Network',
     onedrive: 'OneDrive',
     new_tab: 'New tab',
@@ -63,5 +66,43 @@ export default {
     minutes: 'minutes',
     focus: 'Focus',
     of: ''
+  },
+  resume: {
+    name: 'Almiro Brunelli Neto',
+    title: 'Senior Full Stack Software Engineer',
+    profile: 'Software Engineer with over 12 years of solid IT experience, specializing in the modern Full Stack ecosystem. Expert in Java (Spring Boot), Node.js (NestJS), and Vue.js, with a strong focus on Microservices architecture, scalability, and performance. Proven track record leading the modernization of critical systems, infrastructure automation via Docker, and GitLab CI/CD pipelines. Currently pursuing a Postgraduate degree in Artificial Intelligence.',
+    skills: {
+      title: 'Technical Skills',
+      languages: 'Languages & Frameworks: Java (Spring Boot, Hibernate, Grails), Node.js (NestJS, Express), Vue.js, Nuxt, TypeScript, JavaScript (ES6+).',
+      devops: 'Architecture & DevOps: Microservices Architecture, Docker, GitLab CI/CD, REST APIs, Webhooks, WebSockets, RabbitMQ/SQS foundations.',
+      databases: 'Databases: PostgreSQL, SQL Server, MySQL, MongoDB (NoSQL), Oracle.',
+      quality: 'Quality & Processes: SOLID, Clean Code, Design Patterns, TDD, Cypress (E2E Testing), JUnit, Scrum/Agile.'
+    },
+    experience: {
+      title: 'Professional Experience',
+      uneb_current: {
+        company: 'UNEB - University of the State of Bahia',
+        period: 'March 2023 – Present',
+        role: 'Senior Full Stack Developer',
+        description: 'Architected and developed scalable government systems using Java (Spring/Grails), NestJS, and Vue.js. Migrated legacy monolithic systems to a Microservices architecture. Implemented end-to-end CI/CD workflows via GitLab.'
+      },
+      uneb_past: {
+        company: 'UNEB - University of the State of Bahia',
+        period: 'March 2014 – March 2023',
+        role: 'IT Specialist & Systems Support',
+        description: 'Managed network infrastructure and provided advanced technical support following ITIL frameworks. Automated support routines using scripts and service desk management tools.'
+      }
+    },
+    education: {
+      title: 'Education',
+      ai: 'Postgraduate in Artificial Intelligence | Unyleya (2026 - In Progress)',
+      ads: 'Associate Degree in Systems Analysis and Development | Estácio (2021 – 2024)',
+      is: 'Bachelor in Information Systems | UNEB (2015 – 2019 - Incomplete)'
+    },
+    languages: {
+      title: 'Languages',
+      pt: 'Portuguese: Native',
+      en: 'English: Advanced / Professional Proficiency'
+    }
   }
 }

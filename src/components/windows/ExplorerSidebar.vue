@@ -47,8 +47,40 @@ const navItems = [
         :class="{ active: currentPath === 'pictures' }"
         @click="emit('navigate', 'pictures')"
       >
-        <span class="icon">🖼️</span>
+        <span class="icon">
+          <img src="/src/assets/windows/pictures.png" width="16" height="16" style="display: block" />
+        </span>
         <span class="label">{{ i18n.t('explorer.pictures') }}</span>
+      </div>
+      <div 
+        class="nav-item" 
+        :class="{ active: currentPath === 'music' }"
+        @click="emit('navigate', 'music')"
+      >
+        <span class="icon">
+          <img src="/src/assets/windows/music.png" width="16" height="16" style="display: block" />
+        </span>
+        <span class="label">{{ i18n.t('explorer.music') }}</span>
+      </div>
+      <div 
+        class="nav-item" 
+        :class="{ active: currentPath === 'videos' }"
+        @click="emit('navigate', 'videos')"
+      >
+        <span class="icon">
+          <img src="/src/assets/windows/videos.png" width="16" height="16" style="display: block" />
+        </span>
+        <span class="label">{{ i18n.t('explorer.videos') }}</span>
+      </div>
+      <div 
+        class="nav-item" 
+        :class="{ active: currentPath === 'downloads' }"
+        @click="emit('navigate', 'downloads')"
+      >
+        <span class="icon">
+          <img src="/src/assets/windows/downloads.png" width="16" height="16" style="display: block" />
+        </span>
+        <span class="label">{{ i18n.t('explorer.downloads') }}</span>
       </div>
   </div>
 </template>

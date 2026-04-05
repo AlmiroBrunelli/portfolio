@@ -18,10 +18,13 @@ const emit = defineEmits(['navigate', 'open-file'])
 const { showMenu } = useContextMenu()
 
 const rootItems = ref<ExplorerItem[]>([
-  { label: 'explorer.documents', icon: '📁', internalName: 'documents' },
-  { label: 'explorer.pictures', icon: '🖼️', internalName: 'pictures' },
+  { label: 'explorer.documents', icon: '/src/assets/windows/documents.png', internalName: 'documents' },
+  { label: 'explorer.pictures', icon: '/src/assets/windows/pictures.png', internalName: 'pictures' },
+  { label: 'explorer.music', icon: '/src/assets/windows/music.png', internalName: 'music' },
+  { label: 'explorer.videos', icon: '/src/assets/windows/videos.png', internalName: 'videos' },
+  { label: 'explorer.downloads', icon: '/src/assets/windows/downloads.png', internalName: 'downloads' },
   { label: 'explorer.projects', icon: '/src/assets/windows/project.png', internalName: 'projects' },
-  { label: 'explorer.resume', icon: '/src/assets/windows/pdf.svg', type: 'pdf', path: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf', labelText: 'Currículo.pdf' },
+  { label: 'explorer.resume', icon: '/src/assets/windows/resume.png', internalName: 'resume', labelText: 'Currículo' },
   { label: 'explorer.links', icon: '/src/assets/windows/network.png', internalName: 'links' },
   { label: 'explorer.certificates', icon: '🏆', internalName: 'certificates' },
   { label: 'explorer.blog', icon: '📝', internalName: 'blog' }

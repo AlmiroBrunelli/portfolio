@@ -6,6 +6,7 @@ const emit = defineEmits(['change-os', 'close', 'open-app'])
 
 const pinnedApps = [
   { name: 'Edge', icon: 'ms-edge.png' },
+  { name: 'resume', icon: 'resume.png' },
   { name: 'Word', icon: '📝' },
   { name: 'Photos', icon: '🖼️' },
   { name: 'Settings', icon: 'cog.png' },
@@ -20,9 +21,9 @@ const pinnedApps = [
 ]
 
 const recommendedFiles = [
+  { name: 'resume-pt.pdf', time: 'Há pouco tempo' },
   { name: 'index.html', time: 'Há 2 horas' },
-  { name: 'portfolio_plan.pdf', time: 'Ontem às 14:30' },
-  { name: 'projeto_final.zip', time: 'Segunda-feira' }
+  { name: 'portfolio_plan.pdf', time: 'Ontem às 14:30' }
 ]
 const getIconUrl = (name: string) => {
   return new URL(`../../assets/windows/${name}`, import.meta.url).href
